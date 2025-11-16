@@ -1,8 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { AppConstants } from '$lib';
-import { message, superValidate } from 'sveltekit-superforms/server';
-import { type ErrorStatus } from 'sveltekit-superforms';
+import { superValidate } from 'sveltekit-superforms/server';
 import { zod4 } from 'sveltekit-superforms/adapters';
 import { authschema } from '$lib/auth/schema';
 import { localizeHref } from '$lib/paraglide/runtime';

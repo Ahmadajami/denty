@@ -143,7 +143,7 @@
 					<Accordion.Trigger class="text-left text-lg leading-relaxed font-medium md:text-xl">
 						{faq.question}
 					</Accordion.Trigger>
-					<Accordion.Content class="mt-2 text-white/70 md:text-lg">
+					<Accordion.Content class="mt-2 text-black md:text-lg dark:text-white/70">
 						<p>{faq.answer}</p>
 					</Accordion.Content>
 				</Accordion.Item>
