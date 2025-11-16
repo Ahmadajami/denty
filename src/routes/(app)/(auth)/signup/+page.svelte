@@ -4,6 +4,7 @@
 	import Langugetoggle from '$lib/components/layout/Langugetoggle.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import ClinicForm from '$lib/pages/signup/ClinicForm.svelte';
+	import MedicalForm from '$lib/pages/signup/MedicalForm.svelte';
 
 	// State
 	let { data }: { data: PageData } = $props();
@@ -45,7 +46,7 @@
 	{:else}
 		<!--Medical Form-->
 		<Tabs.Content value="Medical" class="animate-in duration-200 fade-in-0 slide-in-from-left-65">
-			<!-- <MedicalForm form={data.medicalForm} /> -->
+			<MedicalForm form={data.medicalForm} />
 		</Tabs.Content>
 	{/if}
 </Tabs.Root>

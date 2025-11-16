@@ -2,7 +2,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { superValidate } from 'sveltekit-superforms/server';
 import { zod4 } from 'sveltekit-superforms/adapters';
-import { authschema } from '$lib/auth/schema';
+import { authschema } from '$lib/auth';
 import { localizeHref } from '$lib/paraglide/runtime';
 
 export const load: PageServerLoad = async ({ url }) => {

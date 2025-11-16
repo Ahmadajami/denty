@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { SPECIALIZATION_TYPES, clinicSchema, type ClinicSchema } from '$lib/auth';
 	import * as Form from '$lib/components/ui/form/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
+	import { SPECIALIZATION_TYPES, clinicSchema, type ClinicSchema } from '$lib/auth';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { type SuperValidated, type Infer, superForm } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
@@ -41,7 +41,6 @@
 	});
 </script>
 
-<!-- <SuperDebug data={$clinicForm} /> -->
 <form method="POST" action="?/clinicAccount" use:clinicEnhance class="mt-6" autocomplete="on">
 	<div class="grid gap-6">
 		<!-- Full Name Row - English and Arabic side by side -->

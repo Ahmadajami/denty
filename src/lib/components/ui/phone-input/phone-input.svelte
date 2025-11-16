@@ -13,7 +13,7 @@
 
 	let {
 		class: className = undefined,
-		defaultCountry = null,
+		defaultCountry = 'SY',
 		country = $bindable(defaultCountry),
 		options = defaultOptions,
 		placeholder = $bindable(undefined),
@@ -38,7 +38,7 @@
 </script>
 
 <div class="flex place-items-center">
-	<CountrySelector {order} {countries} bind:selected={country} onselect={focus} />
+	<CountrySelector {order} {countries} bind:selected={country} onselect={focus} disabled={true} />
 	<TelInput
 		{name}
 		bind:country
@@ -52,7 +52,7 @@
 		{options}
 		required
 		class={cn(
-			'border-l-none flex h-9 w-full min-w-0 rounded-l-none rounded-r-md border-y border-r border-input bg-background px-3 py-1 text-base shadow-xs ring-offset-background transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-input/30',
+			'border-l-none flex h-9 w-full min-w-0 rounded-l-none! rounded-r-md border-y border-r border-input bg-background px-3 py-1 text-base shadow-xs ring-offset-background transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-input/30',
 			'focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50',
 			'aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40',
 			className
