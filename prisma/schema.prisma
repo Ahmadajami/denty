@@ -1,0 +1,96 @@
+// Define database connection via the `DATABASE_URL` env var
+
+datasource db {
+  provider = "postgresql"
+  url      = env("PRISMA_DATABASE_URL")
+}
+
+// Define custom output path for generated Prisma Client
+
+generator client {
+  provider = "prisma-client-js"
+}
+/* =================================
+   USER MODEL (Doctors + Owners)
+   ================================= */
+model User {
+  id              String   @id @default(cuid())
+  nameAr          String
+  nameEn          String
+  specialization  String?
+  phoneNumber     String   @unique
+  passwordHash    String
+  userAuthToken   String   @unique
+
+  // Clinic owner relation (optional, one-to-one)
+  ownedClinic     Clinic?  @relation("ClinicOwner")
+  
+
+  // Medical center doctor relation (optional)
+  medicalCenterId String?
+  medicalCenter   MedicalCenter? @relation("MedicalCenterDoctors", fields: [medicalCenterId], references: [id])
+
+  // Medical center owner relation (optional)
+  ownedMedicalCenter MedicalCenter? @relation("MedicalCenterOwner")
+
+  isOwner         Boolean @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  role   Role @relation(fields: [roleId], references: [id])
+  roleId Int
+  status       SubscriptionStatus @default(PENDING) // current state
+}
+
+/* 
+============================
+CLINIC (Single Doctor Owner)
+============================ 
+*/
+
+model Clinic {
+  id            String   @id @default(cuid())
+  clinicName    String  @unique
+  // Owner relation (one-to-one)
+  ownerId       String?  @unique
+  owner         User?    @relation("ClinicOwner", fields: [ownerId], references: [id])
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+/* ============================================
+   MEDICAL CENTER (Multi-Doctor + Owner)
+   ============================================ */
+model MedicalCenter {
+  id             String  @id @default(cuid())
+  centerName     String
+
+  // Owner relation (one-to-one)
+  ownerId        String? @unique
+  owner          User?  @relation("MedicalCenterOwner", fields: [ownerId], references: [id])
+
+  // Doctors relation (one-to-many)
+  doctors        User[] @relation("MedicalCenterDoctors")
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+
+/* 
+============================
+ROLE (DEFINES USER ROLES(ADMIN, DOCTOR, ETC))
+============================ 
+*/
+model Role {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  User User[]
+}
+
+
+enum SubscriptionStatus {
+  PENDING
+  SUCCESS
+  CANCELLED
+}

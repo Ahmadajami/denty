@@ -36,7 +36,7 @@
 	});
 	$effect(() => {
 		if ($clinicMessage) {
-			toast.success($clinicMessage);
+			toast.error($clinicMessage);
 		}
 	});
 </script>

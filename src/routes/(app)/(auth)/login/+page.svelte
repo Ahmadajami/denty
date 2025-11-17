@@ -52,10 +52,10 @@
 </div>
 
 <!-- Heading -->
-<h2 class="mb-6 text-3xl font-bold text-gray-900">
+<h2 class="mb-6 text-3xl font-bold text-gray-900 dark:text-white">
 	{m.vivid_wise_bullock_cheer()}
 </h2>
-<p class="mb-8 text-gray-600">{m.email_desc()}</p>
+<p class="mb-8 text-gray-600 dark:text-white/70">{m.email_desc()}</p>
 
 <!-- Login form -->
 <form id="Login" use:enhance method="POST" class="flex flex-col gap-6">

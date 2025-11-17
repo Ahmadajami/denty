@@ -2,7 +2,13 @@ import { superValidate } from 'sveltekit-superforms/server';
 import { zod4 } from 'sveltekit-superforms/adapters';
 import type { Actions, PageServerLoad } from './$types';
 import { clinicSchema, medicalSchema } from '$lib/auth';
-import { fail } from 'sveltekit-superforms';
+import { fail, message } from 'sveltekit-superforms';
+import { db } from '$lib/server/prisma';
+import { hashMe } from '$lib/server/hash-me';
+import { Role } from '$lib/server/role';
+import { localizeHref } from '$lib/paraglide/runtime';
+import { redirect } from '@sveltejs/kit';
+import { SubscriptionStatus } from '@prisma/client';
 
 export const load: PageServerLoad = async () => {
 	// Different schemas, no id required according to the docs
@@ -25,19 +31,129 @@ export const actions: Actions = {
 		}
 
 		console.log(' Form is Valid Clinic Account :', clinicForm.data);
+		const formData = clinicForm.data;
+		const phoneNumber = formData.phone.replace(/\s/g, '');
+		const user = await db.user.findUnique({
+			where: { phoneNumber: phoneNumber }
+		});
+		if (user) {
+			return message(clinicForm, 'Phone number already registered', {
+				status: 409
+			});
+		}
 
-		//redirect(307, localizeHref(`/login?phone=${clinicForm.data.phone.replace(/\s/g, '')}`));
+		await db.user.create({
+			data: {
+				nameAr: formData.name_ar,
+				nameEn: formData.name,
+				phoneNumber,
+				passwordHash: await hashMe(formData.password),
+				role: { connect: { name: Role.USER } },
+				isOwner: true,
+				userAuthToken: crypto.randomUUID(),
+				specialization: formData.specialization,
+				status: SubscriptionStatus.SUCCESS,
+				ownedClinic: {
+					create: {
+						clinicName: formData.clinicName
+					}
+				}
+			}
+		});
+
+		redirect(307, localizeHref(`/login?phone=${phoneNumber}`));
 	},
 	medicalAccount: async ({ request }) => {
-		console.log('form is fire');
-		// validate incoming form data
+		// Validate incoming form data
 		const medicalForm = await superValidate(request, zod4(medicalSchema));
-
 		if (!medicalForm.valid) {
-			console.log("Medical Form isn't valid");
 			return fail(400, { medicalForm });
 		}
 
-		console.log(' Form is Valid Medical Account :', medicalForm.data);
+		const data = medicalForm.data;
+		const ownerPhone = data.phone.replace(/\s/g, '');
+
+		/* ---------------------------------------------------------
+	   1. Check if owner phone is already registered
+	--------------------------------------------------------- */
+		const existingOwner = await db.user.findUnique({
+			where: { phoneNumber: ownerPhone }
+		});
+
+		if (existingOwner) {
+			return message(medicalForm, 'Phone number already registered', { status: 409 });
+		}
+
+		/* ---------------------------------------------------------
+	   2. Validate doctors
+	--------------------------------------------------------- */
+
+		const doctors = data.doctors.map((d) => ({
+			...d,
+			phone: d.phone.replace(/\s/g, '')
+		}));
+
+		// Check if any doctor has same phone as owner
+		const samePhones = doctors.some((doc) => doc.phone === ownerPhone);
+		if (samePhones) {
+			return message(
+				medicalForm,
+				'Medical center owner phone number cannot be the same as any doctor phone number',
+				{ status: 409 }
+			);
+		}
+
+		// Check if any doctor phone exists already
+		const doctorPhoneChecks = await Promise.all(
+			doctors.map((doc) => db.user.findUnique({ where: { phoneNumber: doc.phone } }))
+		);
+
+		const duplicateDoctor = doctorPhoneChecks.find((user) => user !== null);
+		if (duplicateDoctor) {
+			return message(
+				medicalForm,
+				`Doctor phone number ${duplicateDoctor.phoneNumber} is already registered`,
+				{ status: 409 }
+			);
+		}
+
+		/* ---------------------------------------------------------
+	   3. Create Owner + Medical Center
+	--------------------------------------------------------- */
+		const owner = await db.user.create({
+			data: {
+				nameAr: data.name_ar,
+				nameEn: data.name,
+				phoneNumber: ownerPhone,
+				passwordHash: await hashMe(data.password),
+				userAuthToken: crypto.randomUUID(),
+				isOwner: true,
+				role: { connect: { name: Role.USER } },
+				ownedMedicalCenter: {
+					create: { centerName: data.center_name }
+				}
+			}
+		});
+
+		/* ---------------------------------------------------------
+	   4. Create Doctors (Parallel)
+	--------------------------------------------------------- */
+		await Promise.all(
+			doctors.map(async (doc) =>
+				db.user.create({
+					data: {
+						nameAr: doc.name_ar,
+						nameEn: doc.name,
+						phoneNumber: doc.phone,
+						passwordHash: await hashMe(doc.password),
+						userAuthToken: crypto.randomUUID(),
+						role: { connect: { name: Role.USER } },
+						medicalCenter: { connect: { id: owner.medicalCenterId! } }
+					}
+				})
+			)
+		);
+
+		return message(medicalForm, 'Medical account created successfully');
 	}
 };

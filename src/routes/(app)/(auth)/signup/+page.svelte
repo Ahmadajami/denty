@@ -22,7 +22,7 @@
 	<Langugetoggle />
 </div>
 {#key activeTab}
-	<h2 class="mb-6 w-[70%] text-3xl font-bold text-wrap text-gray-900">
+	<h2 class="mb-6 w-[70%] text-3xl font-bold text-wrap text-gray-900 dark:text-foreground">
 		{m.sign_up_header()}
 		<span class="animate-in duration-300 fade-in-0 slide-in-from-bottom-5">
 			{headingText[activeTab]}

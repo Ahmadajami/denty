@@ -1,9 +1,11 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { fail} from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { superValidate } from 'sveltekit-superforms/server';
 import { zod4 } from 'sveltekit-superforms/adapters';
 import { authschema } from '$lib/auth';
-import { localizeHref } from '$lib/paraglide/runtime';
+
+//import { localizeHref } from '$lib/paraglide/runtime';
+
 
 export const load: PageServerLoad = async ({ url }) => {
 	// if (locals.user) {
@@ -19,6 +21,6 @@ export const actions: Actions = {
 		const form = await superValidate(request, zod4(authschema));
 		if (!form.valid) return fail(400, { form });
 
-		redirect(302, localizeHref('/dashboard'));
+		//redirect(302, localizeHref('/dashboard'));
 	}
 };
