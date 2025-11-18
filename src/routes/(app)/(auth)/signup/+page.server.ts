@@ -120,40 +120,44 @@ export const actions: Actions = {
 		/* ---------------------------------------------------------
 	   3. Create Owner + Medical Center
 	--------------------------------------------------------- */
-		const owner = await db.user.create({
+		const hashedDoctors = await Promise.all(
+			doctors.map(async (doc) => ({
+				nameAr: doc.name_ar,
+				nameEn: doc.name,
+				specialization: doc.specialization,
+				phoneNumber: doc.phone,
+				passwordHash: await hashMe(doc.password),
+				userAuthToken: crypto.randomUUID(),
+				role: { connect: { name: Role.USER } }
+			}))
+		);
+
+		/* ---------------------------------------------------------
+	   4. Create Owner + Medical Center + Doctors (nested write)
+	--------------------------------------------------------- */
+
+		await db.user.create({
 			data: {
 				nameAr: data.name_ar,
 				nameEn: data.name,
 				phoneNumber: ownerPhone,
+				specialization: data.specialization,
 				passwordHash: await hashMe(data.password),
 				userAuthToken: crypto.randomUUID(),
 				isOwner: true,
 				role: { connect: { name: Role.USER } },
+
 				ownedMedicalCenter: {
-					create: { centerName: data.center_name }
+					create: {
+						centerName: data.center_name,
+						doctors: {
+							create: hashedDoctors
+						}
+					}
 				}
 			}
 		});
 
-		/* ---------------------------------------------------------
-	   4. Create Doctors (Parallel)
-	--------------------------------------------------------- */
-		await Promise.all(
-			doctors.map(async (doc) =>
-				db.user.create({
-					data: {
-						nameAr: doc.name_ar,
-						nameEn: doc.name,
-						phoneNumber: doc.phone,
-						passwordHash: await hashMe(doc.password),
-						userAuthToken: crypto.randomUUID(),
-						role: { connect: { name: Role.USER } },
-						medicalCenter: { connect: { id: owner.medicalCenterId! } }
-					}
-				})
-			)
-		);
-
-		return message(medicalForm, 'Medical account created successfully');
+		redirect(307, localizeHref(`/login?phone=${ownerPhone.replace(/\s/g, '')}`));
 	}
 };

@@ -1,18 +1,13 @@
 //import type { UserRole } from '@prisma/client';
 import { z } from 'zod/v4';
 import { clinicSchema, medicalSchema } from './schema';
-export type UserModel = {
-	id: string;
-	fullName: string;
-	fullName_ar: string;
-	phoneNumber: string;
-//	role: UserRole;
-	clinicName?: string | null;
-	specialization?: string | null;
-};
 
 export type ClinicSchema = typeof clinicSchema;
 export type MedicalSchema = typeof medicalSchema;
 
 export type ClinicData = z.infer<typeof clinicSchema>;
 export type MedicalData = z.infer<typeof medicalSchema>;
+
+
+
+

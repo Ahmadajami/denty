@@ -39,6 +39,13 @@ model User {
   role   Role @relation(fields: [roleId], references: [id])
   roleId Int
   status       SubscriptionStatus @default(PENDING) // current state
+
+   
+  @@index([medicalCenterId])           // For join to MedicalCenter
+  @@index([roleId])                     // For join to Role
+  @@index([isOwner])                    // For owner filtering
+  @@index([status])                     // For subscription filtering
+  @@index([isOwner, medicalCenterId])   // Composite for doctor type detection
 }
 
 /* 
