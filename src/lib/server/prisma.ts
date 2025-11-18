@@ -1,3 +1,4 @@
-import prisma from '@prisma/client'
+import prisma from '@prisma/client';
+import { withAccelerate } from '@prisma/extension-accelerate';
 
-export const db = new prisma.PrismaClient()
+export const db = new prisma.PrismaClient().$extends(withAccelerate());
