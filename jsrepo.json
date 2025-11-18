@@ -11,6 +11,6 @@
 		"ui": "$lib/components/ui",
 		"actions": "$lib/actions",
 		"hooks": "$lib/hooks",
-		"utils": "$lib/utils"
+		"utils": "$lib"
 	}
 }
