@@ -1,4 +1,4 @@
-// Define database connection via the `DATABASE_URL` env var
+
 
 datasource db {
   provider = "postgresql"

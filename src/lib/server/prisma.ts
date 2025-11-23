@@ -1,13 +1,13 @@
 import 'dotenv/config';
 import { PrismaClient } from '$lib/server/db/generated/prisma/client'; // Prisma v7 path
 import { withAccelerate } from '@prisma/extension-accelerate';
-import { DATABASE_URL } from '$env/static/private';
+import { PRISMA_DATABASE_URL } from '$env/static/private';
 import { dev } from '$app/environment';
 
 const db =
 	globalThis.prisma ||
 	new PrismaClient({
-		accelerateUrl: DATABASE_URL
+		accelerateUrl: PRISMA_DATABASE_URL
 	}).$extends(withAccelerate());
 
 if (dev) globalThis.prisma = db;
