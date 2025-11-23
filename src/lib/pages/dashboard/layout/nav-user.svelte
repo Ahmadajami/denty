@@ -16,7 +16,9 @@
 	import { useSidebar } from '$lib/components/ui/sidebar/index.js';
 	import Switch from '$lib/components/ui/switch/switch.svelte';
 	import { deLocalizeHref, getLocale, setLocale } from '$lib/paraglide/runtime';
-	let { user, formLoading = $bindable<boolean>(false) }: { user: any; formLoading: boolean } =
+	import type { AppUser } from '$lib/auth/user';
+	import { page } from '$app/state';
+	let { user, formLoading = $bindable<boolean>(false) }: { user: AppUser; formLoading: boolean } =
 		$props();
 	const sidebar = useSidebar();
 	const isArabic = getLocale() == 'ar';
@@ -40,6 +42,7 @@
 							<span class="truncate font-medium">
 								{getLocale() == 'ar' ? user.nameAr : user.nameEn}
 							</span>
+
 							<!-- <span class="truncate text-xs">{user.email}</span> -->
 						</div>
 						<ChevronsUpDownIcon class="ml-auto size-4" />
@@ -55,7 +58,7 @@
 				<DropdownMenu.Label class="p-0 font-normal">
 					<div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
 						<Avatar.Root class="size-8 rounded-lg">
-							<Avatar.Image src={'https://picsum.photos/200'} alt={`avatar-for-${user.nameEn}`} />
+							<Avatar.Image src={'https://picsum.photos/200'} alt={`avatar-for-${user.nameAr}`} />
 							<Avatar.Fallback class="rounded-lg">CN</Avatar.Fallback>
 						</Avatar.Root>
 						<div class="grid flex-1 text-left text-sm leading-tight">

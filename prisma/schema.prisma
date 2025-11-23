@@ -2,14 +2,15 @@
 
 datasource db {
   provider = "postgresql"
-  url = env("PRISMA_DATABASE_URL")
 }
 
 // Define custom output path for generated Prisma Client
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+   output   = "../src/lib/server/db/generated/prisma"
 }
+
 /* =================================
    USER MODEL (Doctors + Owners)
    ================================= */
@@ -21,7 +22,7 @@ model User {
   phoneNumber     String   @unique
   passwordHash    String
   userAuthToken   String   @unique
-
+  createdPatients  Patient[] @relation("PatientCreator")
   // Clinic owner relation (optional, one-to-one)
   ownedClinic     Clinic?  @relation("ClinicOwner")
   
@@ -56,10 +57,13 @@ CLINIC (Single Doctor Owner)
 
 model Clinic {
   id            String   @id @default(cuid())
-  clinicName    String  @unique
-  // Owner relation (one-to-one)
+  clinicName    String   @unique
+
   ownerId       String?  @unique
   owner         User?    @relation("ClinicOwner", fields: [ownerId], references: [id])
+
+  // NEW many-to-many relation
+  patients      Patient[] @relation("PatientClinics")
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -72,16 +76,18 @@ model MedicalCenter {
   id             String  @id @default(cuid())
   centerName     String
 
-  // Owner relation (one-to-one)
   ownerId        String? @unique
-  owner          User?  @relation("MedicalCenterOwner", fields: [ownerId], references: [id])
+  owner          User?   @relation("MedicalCenterOwner", fields: [ownerId], references: [id])
 
-  // Doctors relation (one-to-many)
-  doctors        User[] @relation("MedicalCenterDoctors")
+  doctors        User[]  @relation("MedicalCenterDoctors")
+
+  // NEW many-to-many relation
+  patients       Patient[] @relation("PatientMedicalCenters")
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
+
 
 
 /* 
@@ -95,6 +101,61 @@ model Role {
   User User[]
 }
 
+
+model Patient {
+  id            String   @id @default(cuid())
+
+  fullname      String
+  fullnameAr    String   
+  phoneNumber   String   @unique
+
+  createdById   String
+  createdBy     User     @relation("PatientCreator", fields: [createdById], references: [id])
+
+  
+  clinics        Clinic[]        @relation("PatientClinics")
+  medicalCenters MedicalCenter[] @relation("PatientMedicalCenters")
+
+  createdAt       DateTime        @default(now())
+  updated         DateTime        @updatedAt
+
+  @@index([phoneNumber])
+}
+
+/* =================================
+   TREATMENT CATALOG & GROUPS
+   ================================= */
+
+model TreatmentGroup {
+  id          String   @id @default(cuid())
+  name        String   @unique // e.g., "Tooth Gum", "Surgery"
+  nameAr      String?  // Optional Arabic name for consistency with User model
+  color       String   // e.g., "#FFC0CB" or "Pink"
+  
+  // Relation: A group contains many treatments
+  treatments  Treatment[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Treatment {
+  id          String   @id @default(cuid())
+  name        String   // e.g., "Gingivectomy", "Deep Cleaning"
+  nameAr      String?  
+  
+  // Relation to Group
+  groupId     String
+  group       TreatmentGroup @relation(fields: [groupId], references: [id])
+
+  // Optional: Base price (can be overridden by clinics later)
+  basePrice   Decimal? @default(0.0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([groupId]) // Optimization for fetching treatments by group
+}
 
 enum SubscriptionStatus {
   PENDING

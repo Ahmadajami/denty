@@ -1,15 +1,15 @@
-import { PRISMA_DATABASE_URL } from '$env/static/private';
-import { PrismaClient } from '@prisma/client';
+import 'dotenv/config';
+import { PrismaClient } from '$lib/server/db/generated/prisma/client'; // Prisma v7 path
 import { withAccelerate } from '@prisma/extension-accelerate';
+import { DATABASE_URL } from '$env/static/private';
+import { dev } from '$app/environment';
 
 const db =
-	global.prisma ||
+	globalThis.prisma ||
 	new PrismaClient({
-		datasourceUrl: PRISMA_DATABASE_URL
+		accelerateUrl: DATABASE_URL
 	}).$extends(withAccelerate());
 
-if (process.env.NODE_ENV === 'development') {
-	global.prisma = db;
-}
+if (dev) globalThis.prisma = db;
 
 export { db };
