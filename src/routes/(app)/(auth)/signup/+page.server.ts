@@ -8,7 +8,7 @@ import { hashMe } from '$lib/server/hash-me';
 import { Role } from '$lib/server/role';
 import { localizeHref } from '$lib/paraglide/runtime';
 import { redirect } from '@sveltejs/kit';
-import { SubscriptionStatus } from '@prisma/client';
+import { SubscriptionStatus } from '$lib/server/db/generated/prisma/client';
 
 export const load: PageServerLoad = async () => {
 	// Different schemas, no id required according to the docs
