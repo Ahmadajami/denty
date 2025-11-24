@@ -9,8 +9,9 @@
 	import Faq from '$lib/components/hero/Faq.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
+	import type { PageData } from './$types';
 
-	//let { data }: { data: PageData } = $props();
+	let { data }: { data: PageData } = $props();
 	let isArabic = $derived(getLocale() === 'ar');
 </script>
 
@@ -21,7 +22,7 @@
 </svelte:head>
 <!-- Hero Section -->
 <AniamteView cssOnly={true}>
-	<div class="dark:bg-grid bg-grid-dark my-2">
+	<div class="my-2 bg-grid-dark dark:bg-grid">
 		<section
 			class="grid min-h-svh grid-cols-1 md:grid-cols-2 md:pl-10 md:rtl:pr-10"
 			aria-labelledby="hero-heading"
@@ -42,7 +43,7 @@
 				</h1>
 
 				<p
-					class="text-muted-foreground mt-4 max-w-prose text-center text-base md:text-left md:text-lg rtl:md:text-right"
+					class="mt-4 max-w-prose text-center text-base text-muted-foreground md:text-left md:text-lg rtl:md:text-right"
 				>
 					{m.fluffy_big_dingo_stir()}
 				</p>
@@ -92,3 +93,4 @@
 <Pricing bind:isArabic />
 
 <Faq bind:isArabic />
+{data.user}

@@ -9,7 +9,6 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { PhoneInput } from '$lib/components/ui/phone-input';
 	import type { E164Number } from 'svelte-tel-input/types';
-
 	import type { PatientType } from '$lib/zod/patient';
 
 	const DEBOUNCETIME = 900;
@@ -42,7 +41,7 @@
 		const signal = controller.signal;
 
 		try {
-			const res = await fetch(`/dashboard/search.json?q=${encodeURIComponent(searchQuery)}`, {
+			const res = await fetch(`/dashboard/api/search.json?q=${encodeURIComponent(searchQuery)}`, {
 				signal
 			});
 			if (!res.ok) throw new Error(`Search failed: ${res.status}`);

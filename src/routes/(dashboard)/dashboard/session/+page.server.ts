@@ -1,6 +1,6 @@
 import { superValidate, message } from 'sveltekit-superforms/server';
 import type { PageServerLoad } from './$types';
-import { reportLastStep } from '$lib/zod/treatment';
+import { reportLastStep } from '$lib/zod/session';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { fail } from '@sveltejs/kit';

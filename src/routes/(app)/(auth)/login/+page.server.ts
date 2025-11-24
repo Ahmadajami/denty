@@ -7,6 +7,7 @@ import { db } from '$lib/server/prisma';
 import { redirect } from '@sveltejs/kit';
 import { localizeHref } from '$lib/paraglide/runtime';
 import { verifyMe } from '$lib/server/hash-me';
+import { dev } from '$app/environment';
 
 //import { localizeHref } from '$lib/paraglide/runtime';
 
@@ -52,7 +53,7 @@ export const actions: Actions = {
 			// https://developer.mozilla.org/en-US/docs/Glossary/CSRF
 			sameSite: 'strict',
 			// only sent over HTTPS in production
-			secure: process.env.NODE_ENV === 'production',
+			secure: !dev,
 			// set cookie to expire after a month
 			maxAge: 60 * 60 * 24 * 30
 		});

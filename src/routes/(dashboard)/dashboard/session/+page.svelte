@@ -11,7 +11,7 @@
 	import { zod4 } from 'sveltekit-superforms/adapters';
 	import type { E164Number } from 'svelte-tel-input/types';
 	import type { PageProps } from './$types';
-	import { reportLastStep, reportStep0, reportStep1, reviewStep } from '$lib/zod/treatment';
+	import { reportLastStep, reportStep0, reportStep1, reviewStep } from '$lib/zod/session';
 	import AddPatient from '$lib/shared/AddPatient.svelte';
 	import { toast } from 'svelte-sonner';
 	import { normalizeTelInput, parsePhoneNumberWithError } from 'svelte-tel-input';
@@ -22,7 +22,9 @@
 	import Tooth from '$lib/shared/tooth/Tooth.svelte';
 	import Label from '$lib/components/ui/label/label.svelte';
 	import Checkbox from '$lib/components/ui/checkbox/checkbox.svelte';
+	import * as Select from '$lib/components/ui/select/index.js';
 	import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
+	import { onMount } from 'svelte';
 
 	let { data }: PageProps = $props();
 
@@ -125,6 +127,32 @@
 	});
 	let LegendColor = $derived(['red', 'green', 'blue']);
 	let selectTooth = $state<Number>(0);
+	let treatmentGroups = $state<
+		{
+			id: string;
+			name: string;
+			nameAr: string | null;
+			color: string;
+		}[]
+	>([]);
+
+	let treatmentGroupsLoading = $state(true);
+	function getTreatmentGroups() {
+		return fetch('/dashboard/api/treatment-groups.json');
+	}
+	async function getTreatmentByGroupId(groupId: string) {
+		const q = encodeURIComponent(groupId);
+		const res = await fetch(`/dashboard/api/treatment.json/${q}`);
+		return res.json();
+	}
+	onMount(() => {
+		getTreatmentGroups()
+			.then((res) => res.json())
+			.then((data) => {
+				treatmentGroups = data;
+				treatmentGroupsLoading = false;
+			});
+	});
 </script>
 
 {#snippet header(title: string, description: string)}
@@ -135,7 +163,7 @@
 {/snippet}
 
 {#snippet legendItem(color: string, name: string)}
-	<div class="inline-flex items-center space-x-1.5 text-xs sm:text-sm">
+	<div class="inline-flex items-center space-x-1.5 text-lg font-semibold">
 		<div class="h-2 w-2 sm:h-3 sm:w-3" style="background-color: {color}"></div>
 		<span class=" italic">{name}</span>
 	</div>
@@ -209,14 +237,19 @@
 		<!-- Step 2: Tooth & Diagnoses -->
 		<div class="animate-in duration-300 ease-in-out fade-in slide-in-from-bottom-4">
 			<Card.Root class="min-w-full">
-				<Card.Header>
-					<h2>Legend</h2>
-				</Card.Header>
-				<Card.Content
-					class="my-0 grid grid-cols-2 gap-4 py-0 
-                 text-sm sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
-				>
-					show Colors
+				<Card.Content class="p-8">
+					{#if treatmentGroupsLoading}
+						<div class="flex h-full w-full items-center justify-center">
+							<Loader class="animate-spin" />
+						</div>
+					{:else}
+						<div class="flex flex-wrap gap-8">
+							{#each treatmentGroups as group}
+								{@const groupName = getLocale() === 'ar' ? group.nameAr : group.name}
+								{@render legendItem(group.color, groupName ?? '')}
+							{/each}
+						</div>
+					{/if}
 				</Card.Content>
 			</Card.Root>
 			<section class="flex flex-col gap-8 p-8 md:flex-row">
@@ -240,7 +273,40 @@
 
 					<Card.Content>
 						<ScrollArea class="h-[400px]" data-lenis-prvent>
-							<div class="p-3">show Treatments</div>
+							{#if treatmentGroupsLoading}
+								<div class="flex h-full w-full items-center justify-center">
+									<Loader class="animate-spin" />
+								</div>
+							{:else}
+								<div class="flex flex-wrap gap-8">
+									{#if treatmentGroups.length > 0}
+										{#each treatmentGroups as group}
+											{#await getTreatmentByGroupId(group.id) then treatments}
+												<Select.Root type="single" name={group.name}>
+													<Select.Trigger class="w-72">
+														<p class="inline-flex w-full items-center gap-2">
+															<ArrowLeft />
+															<span>{group.name}</span>
+														</p>
+													</Select.Trigger>
+													<Select.Content>
+														<Select.Group>
+															<Select.Label>Fruits</Select.Label>
+															{#each treatments as treatment (treatment.id)}
+																<Select.Item value={treatment.id} label={treatment.name}>
+																	{treatment.name}
+																</Select.Item>
+															{/each}
+														</Select.Group>
+													</Select.Content>
+												</Select.Root>
+											{/await}
+										{/each}
+									{:else}
+										no grup lengt
+									{/if}
+								</div>
+							{/if}
 						</ScrollArea>
 					</Card.Content>
 				</Card.Root>
@@ -248,3 +314,16 @@
 		</div>
 	{/if}
 </form>
+<!-- <Select.Root type="single" name={group.name}>
+												<Select.Trigger class="w-[180px]">trigger</Select.Trigger>
+												<Select.Content>
+													<Select.Group>
+														<Select.Label>Fruits</Select.Label>
+														{#each treatments as treatment (treatment.id)}
+															<Select.Item value={treatment.id} label={treatment.name}>
+																{treatment.name}
+															</Select.Item>
+														{/each}
+													</Select.Group>
+												</Select.Content>
+											</Select.Root> -->
