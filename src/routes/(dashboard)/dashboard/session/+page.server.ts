@@ -150,7 +150,6 @@ export const actions = {
 				groupMap
 			);
 
-			// --- 2. GENERATE PDF (Vercel & Local Compatible) ---
 			let browser;
 
 			// Vercel / Production Environment
