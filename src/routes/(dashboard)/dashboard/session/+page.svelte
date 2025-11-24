@@ -2,12 +2,15 @@
 	import Loader from '@lucide/svelte/icons/loader';
 	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 	import ArrowRight from '@lucide/svelte/icons/arrow-right';
+	import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
+	import CheckCircle from '@lucide/svelte/icons/check-circle';
 </script>
 
 <script lang="ts">
-	import * as Card from '$lib/components/ui/card/index';
+	// --- 1. Imports ---
+	import * as Card from '$lib/components/ui/card';
 	import SuperDebug, { superForm } from 'sveltekit-superforms';
-	import { Button } from '$lib/components/ui/button/index';
+	import { Button } from '$lib/components/ui/button';
 	import { zod4 } from 'sveltekit-superforms/adapters';
 	import type { E164Number } from 'svelte-tel-input/types';
 	import type { PageProps } from './$types';
@@ -20,46 +23,172 @@
 	import Stepper from '$lib/pages/session/components/Stepper.svelte';
 	import PatientInfo from '$lib/pages/session/components/PatientInfo.svelte';
 	import Tooth from '$lib/shared/tooth/Tooth.svelte';
-	import Label from '$lib/components/ui/label/label.svelte';
-	import Checkbox from '$lib/components/ui/checkbox/checkbox.svelte';
-	import * as Select from '$lib/components/ui/select/index.js';
-	import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
+	import * as Select from '$lib/components/ui/select';
+	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 	import { onMount } from 'svelte';
 
+	// --- 2. Type Definitions ---
+	type Treatment = {
+		id: string;
+		name: string;
+		nameAr: string | null;
+		groupId: string;
+		basePrice: number | null;
+	};
+
+	type TreatmentGroup = {
+		id: string;
+		name: string;
+		nameAr: string | null;
+		color: string;
+	};
+
+	type TreatmentSelection = {
+		toothNumber: number;
+		treatmentId: string;
+	};
+
+	// --- 3. Runes State & Props ---
 	let { data }: PageProps = $props();
-
-	const STEPS = [zod4(reportStep0), zod4(reportStep1), zod4(reportLastStep), zod4(reviewStep)];
-
-	let currentStep = $state(1);
-	let query = $state<E164Number>('');
-	let addPatientDialog = $state(false);
-
-	const isLastStep = $derived(currentStep === STEPS.length);
 
 	const form = superForm(data.form, {
 		dataType: 'json',
 		taintedMessage: true,
 		onSubmit: async ({ cancel }) => {
-			if (isLastStep) {
-				return;
-			}
+			if (isLastStep) return;
 
 			cancel();
-
 			const result = await form.validateForm({ update: true });
 
 			if (result.valid) {
 				currentStep++;
 			}
-		},
+		}
+	});
 
-		onUpdated: async ({ form }) => {
-			if (form.valid) {
-				currentStep = 1;
-				query = '';
+	const { form: formData, enhance, delayed } = form; // removed message if unused
+
+	const STEPS = [zod4(reportStep0), zod4(reportStep1), zod4(reportLastStep), zod4(reviewStep)];
+	let currentStep = $state(1);
+	let query = $state<E164Number>('');
+	let addPatientDialog = $state(false);
+
+	// Data State
+	let treatmentGroups = $state<TreatmentGroup[]>([]);
+	let allTreatments = $state<Map<string, Treatment[]>>(new Map());
+	let allGroupsMap = $state<Map<string, TreatmentGroup>>(new Map());
+	let treatmentGroupsLoading = $state(true);
+	let selectedToothNumber = $state<number | null>(null);
+
+	// --- 4. Derived Logic ---
+
+	const isLastStep = $derived(currentStep === STEPS.length);
+
+	const toothColors = $derived.by(() => {
+		const colors = new Map<number, string>();
+
+		($formData.toothTreatments as TreatmentSelection[]).forEach((selection) => {
+			if (selection.treatmentId) {
+				let treatmentGroupId: string | undefined;
+				for (const [groupId, treatments] of allTreatments.entries()) {
+					if (treatments.some((t) => t.id === selection.treatmentId)) {
+						treatmentGroupId = groupId;
+						break;
+					}
+				}
+				if (treatmentGroupId) {
+					const group = allGroupsMap.get(treatmentGroupId);
+					if (group) {
+						colors.set(selection.toothNumber, group.color);
+					}
+				}
+			}
+		});
+
+		// Highlight selected tooth
+		if (selectedToothNumber && !colors.has(selectedToothNumber)) {
+			colors.set(selectedToothNumber, '#3b82f6'); // Blue highlight
+		}
+
+		return colors;
+	});
+
+	// Derived: Check if the currently selected tooth has a valid treatment assigned
+	const currentToothStatus = $derived.by(() => {
+		if (!selectedToothNumber) return 'none';
+
+		const selection = ($formData.toothTreatments as TreatmentSelection[]).find(
+			(t) => t.toothNumber === selectedToothNumber
+		);
+
+		if (selection && selection.treatmentId) {
+			// Find name for display
+			let tName = 'Treatment Selected';
+			for (const treatments of allTreatments.values()) {
+				const found = treatments.find((t) => t.id === selection.treatmentId);
+				if (found) {
+					tName = getLocale() === 'ar' ? (found.nameAr ?? found.name) : found.name;
+					break;
+				}
+			}
+			return { status: 'complete', name: tName };
+		}
+
+		return { status: 'pending', name: '' };
+	});
+
+	// Effect: Update Validators
+	$effect(() => {
+		form.options.validators = STEPS[currentStep - 1];
+	});
+
+	// Effect: Phone init
+	$effect(() => {
+		if (data.PhoneNumber) {
+			try {
+				const p = '+' + data.PhoneNumber;
+				const t = getE164Number(p);
+				if (t) {
+					query = t;
+					$formData.phone = query;
+				}
+			} catch (err) {
+				console.error('Invalid phone number:', err);
 			}
 		}
 	});
+
+	// Effect: Toast Helper
+	const toastMessage =
+		'This tooth diagram displays all teeth that have received treatment. To record a new procedure, first select the treatment you performed during the session, and then click on the corresponding tooth in the diagram.';
+	$effect(() => {
+		const shouldShow = localStorage.getItem('showToothelp') !== 'false';
+		if (currentStep === 1 && shouldShow) {
+			toast(toastMessage, {
+				action: {
+					label: `Don't show again`,
+					onClick: () => {
+						localStorage.setItem('showToothelp', 'false');
+					}
+				},
+				position: 'bottom-center',
+				duration: 9000
+			});
+		}
+	});
+
+	function getE164Number(phoneNumber: string): string | null {
+		try {
+			const parsedNumber = parsePhoneNumberWithError(phoneNumber);
+			if (parsedNumber.isValid()) {
+				return normalizeTelInput(parsedNumber).e164;
+			}
+			return null;
+		} catch (error) {
+			return null;
+		}
+	}
+
 	function handleonSuccessPatient(phoneNumber: string) {
 		try {
 			const tt = parsePhoneNumberWithError(phoneNumber);
@@ -74,106 +203,79 @@
 			toast.error('Invalid phone number');
 		}
 	}
-	function getE164Number(phoneNumber: string): string | null {
+
+	// --- 7. Fetching ---
+	async function getTreatmentGroupsAndTreatments() {
+		treatmentGroupsLoading = true;
 		try {
-			const parsedNumber = parsePhoneNumberWithError(phoneNumber);
+			const groupsRes = await fetch('/dashboard/api/treatment-groups.json');
+			const groupsData: TreatmentGroup[] = await groupsRes.json();
+			treatmentGroups = groupsData;
 
-			if (parsedNumber.isValid()) {
-				const normalized = normalizeTelInput(parsedNumber);
-				return normalized.e164;
-			}
+			groupsData.forEach((group) => allGroupsMap.set(group.id, group));
 
-			return null;
-		} catch (error) {
-			return null;
-		}
-	}
-
-	const { form: formData, enhance, delayed, message } = form;
-	(function () {
-		if (data.PhoneNumber) {
-			try {
-				const p = '+' + data.PhoneNumber;
-				const t = getE164Number(p);
-				query = t ?? '';
-				$formData.phone = query;
-			} catch (err) {
-				console.error('Invalid phone number in data:', err);
-			}
-		}
-	})();
-	const toastMessage =
-		'This tooth diagram displays all teeth that have received treatment. To record a new procedure, first select the treatment you performed during the session, and then click on the corresponding tooth in the diagram.';
-	$effect(() => {
-		form.options.validators = STEPS[currentStep - 1];
-	});
-	$effect(() => {
-		const shouldShow = localStorage.getItem('showToothelp') !== 'false';
-		if (currentStep === 1) {
-			if (shouldShow) {
-				toast(toastMessage, {
-					action: {
-						label: `Don't show again`,
-						onClick: () => {
-							localStorage.setItem('showToothelp', 'false');
-							console.log("Don't show again clicked. Preference saved.");
-						}
-					},
-					position: 'bottom-center',
-					duration: 9000
-				});
-			}
-		}
-	});
-	let LegendColor = $derived(['red', 'green', 'blue']);
-	let selectTooth = $state<Number>(0);
-	let treatmentGroups = $state<
-		{
-			id: string;
-			name: string;
-			nameAr: string | null;
-			color: string;
-		}[]
-	>([]);
-
-	let treatmentGroupsLoading = $state(true);
-	function getTreatmentGroups() {
-		return fetch('/dashboard/api/treatment-groups.json');
-	}
-	async function getTreatmentByGroupId(groupId: string) {
-		const q = encodeURIComponent(groupId);
-		const res = await fetch(`/dashboard/api/treatment.json/${q}`);
-		return res.json();
-	}
-	onMount(() => {
-		getTreatmentGroups()
-			.then((res) => res.json())
-			.then((data) => {
-				treatmentGroups = data;
-				treatmentGroupsLoading = false;
+			const fetchPromises = groupsData.map(async (group) => {
+				const q = encodeURIComponent(group.id);
+				const res = await fetch(`/dashboard/api/treatment.json/${q}`);
+				const treatments: Treatment[] = await res.json();
+				allTreatments.set(group.id, treatments);
 			});
+
+			await Promise.all(fetchPromises);
+		} catch (error) {
+			console.error('Failed to load treatments data:', error);
+			toast.error('Failed to load treatments data.');
+		} finally {
+			treatmentGroupsLoading = false;
+		}
+	}
+
+	// --- 8. Handlers ---
+	function handleToothSelect(toothKey: string) {
+		const toothNumber = Number(toothKey);
+		const existingTreatmentIndex = ($formData.toothTreatments as TreatmentSelection[]).findIndex(
+			(t) => t.toothNumber === toothNumber
+		);
+
+		if (toothNumber === selectedToothNumber && existingTreatmentIndex !== -1) {
+			// Toggle Off
+			$formData.toothTreatments = ($formData.toothTreatments as TreatmentSelection[]).filter(
+				(t, idx) => idx !== existingTreatmentIndex
+			);
+			selectedToothNumber = null;
+		} else {
+			// Select New
+			selectedToothNumber = toothNumber;
+			if (existingTreatmentIndex === -1) {
+				$formData.toothTreatments = [
+					...($formData.toothTreatments as TreatmentSelection[]),
+					{ toothNumber: toothNumber, treatmentId: '' }
+				];
+			}
+		}
+	}
+
+	onMount(() => {
+		getTreatmentGroupsAndTreatments();
 	});
 </script>
 
-{#snippet header(title: string, description: string)}
-	<div class="space-y-1 text-center sm:text-left">
-		<h2 class="text-3xl font-bold tracking-tight">{title}</h2>
-		<p class="text-sm">{description}</p>
+{#snippet legendItem(color: string, name: string)}
+	<div class="inline-flex items-center space-x-1.5 text-sm font-medium">
+		<div
+			class="h-3 w-3 rounded-full border border-gray-200"
+			style="background-color: {color}"
+		></div>
+		<span class="text-muted-foreground">{name}</span>
 	</div>
 {/snippet}
 
-{#snippet legendItem(color: string, name: string)}
-	<div class="inline-flex items-center space-x-1.5 text-lg font-semibold">
-		<div class="h-2 w-2 sm:h-3 sm:w-3" style="background-color: {color}"></div>
-		<span class=" italic">{name}</span>
-	</div>
-{/snippet}
 {#if $delayed}
 	<div class="flex min-h-svh min-w-screen items-center justify-center">
 		<Loader class="animate-spin" />
 	</div>
 {/if}
-<SuperDebug data={$formData} />
+
 <AddPatient
 	patientForm={data.patientForm}
 	bind:addPatientDialog
@@ -185,44 +287,37 @@
 		<Loader class="animate-spin" />
 	{/snippet}
 </AddPatient>
-<div class="flex w-full items-center justify-between border-b border-gray-200 px-6 py-1 shadow-sm">
-	<!-- Left: Page Title -->
-	<h1 class="hidden space-x-2.5 text-2xl font-bold md:block">
-		<Button
-			size="icon"
-			onclick={() => history.back()}
-			class=" cursor-pointer items-center bg-transparent text-sm  shadow-2xl transition-all hover:scale-125 hover:scale-3d   "
-		>
-			{#if getLocale() == 'ar'}
-				<ArrowRight
-					class="mr-1 h-4 w-4 text-black transition-all hover:scale-125 hover:scale-3d dark:text-white"
-				/>
-			{:else}
-				<ArrowLeft
-					class="mr-1 h-4 w-4 text-black transition-all hover:scale-125 hover:scale-3d dark:text-white"
-				/>
-			{/if}
-		</Button><span>Enter Your Session Details</span>
-	</h1>
 
-	<!-- Center: Stepper -->
+<div class="flex w-full items-center justify-between border-b border-gray-200 px-6 py-2 shadow-sm">
+	<div class="hidden items-center gap-2 md:flex">
+		<Button size="icon" variant="ghost" onclick={() => history.back()} class="h-8 w-8">
+			{#if getLocale() === 'ar'}
+				<ArrowRight class="h-4 w-4" />
+			{:else}
+				<ArrowLeft class="h-4 w-4" />
+			{/if}
+		</Button>
+		<h1 class="text-lg font-bold">New Session</h1>
+	</div>
+
 	<div class="flex flex-1 justify-center self-center">
 		<Stepper bind:currIndex={currentStep} totalSteps={STEPS.length} />
 	</div>
-
-	<!-- Right: Empty spacer (for symmetry / future actions) -->
-	<div class="hidden w-[180px] md:block"><Themetoggle /></div>
+	<div class="hidden w-[180px] md:block">
+		<Themetoggle />
+	</div>
 </div>
-<form method="POST" action="?/new_session" use:enhance>
+
+<form method="POST" action="?/new_session" use:enhance class="w-full">
 	{#if currentStep === 2}
 		<section
-			class="flex min-h-screen w-full animate-in items-center justify-center px-4 py-16 fade-in slide-in-from-bottom-4"
+			class="flex h-full w-full animate-in items-center justify-center p-4 fade-in slide-in-from-bottom-4"
 		>
 			<PatientInfo
 				{form}
 				{formData}
 				bind:addPatientDialog
-				bind:query={() => query, (phone) => (query = getE164Number(phone) ?? phone)}
+				bind:query
 				onValue={(value) => {
 					query = value;
 					$formData.phone = query;
@@ -234,17 +329,18 @@
 			</PatientInfo>
 		</section>
 	{:else if currentStep === 1}
-		<!-- Step 2: Tooth & Diagnoses -->
-		<div class="animate-in duration-300 ease-in-out fade-in slide-in-from-bottom-4">
-			<Card.Root class="min-w-full">
-				<Card.Content class="p-8">
+		<div
+			class="flex h-full animate-in flex-col gap-4 p-4 duration-300 ease-in-out fade-in slide-in-from-bottom-4 md:p-8"
+		>
+			<Card.Root class="w-full shrink-0">
+				<Card.Content class="py-4">
 					{#if treatmentGroupsLoading}
-						<div class="flex h-full w-full items-center justify-center">
-							<Loader class="animate-spin" />
+						<div class="flex w-full justify-center">
+							<Loader class="h-4 w-4 animate-spin text-muted-foreground" />
 						</div>
 					{:else}
-						<div class="flex flex-wrap gap-8">
-							{#each treatmentGroups as group}
+						<div class="flex flex-wrap justify-center gap-x-6 gap-y-2">
+							{#each treatmentGroups as group (group.id)}
 								{@const groupName = getLocale() === 'ar' ? group.nameAr : group.name}
 								{@render legendItem(group.color, groupName ?? '')}
 							{/each}
@@ -252,78 +348,137 @@
 					{/if}
 				</Card.Content>
 			</Card.Root>
-			<section class="flex flex-col gap-8 p-8 md:flex-row">
-				<Card.Root class=" flex w-full basis-[40%] items-center justify-center">
-					<Tooth
-						fillColor="red"
-						onSelect={(tooth, newState) => {
-							$formData.toothTreatments[0] = {
-								toothNumber: Number(tooth.key),
-								treatmentId: ''
-							};
-						}}
-					/>
+
+			<section class="flex flex-1 flex-col gap-6 lg:flex-row">
+				<Card.Root class="flex min-h-[500px] basis-full items-center justify-center lg:basis-[40%]">
+					<Tooth markedTeeth={toothColors} onSelect={({ key }) => handleToothSelect(key)} />
 				</Card.Root>
 
-				<Card.Root class="basis-[60%]">
+				<Card.Root class="basis-full lg:basis-[60%]">
 					<Card.Header>
-						<Card.Title>Treatments Section for Tooth</Card.Title>
-						<Card.Description>Here are the Treatments Section</Card.Description>
+						<Card.Title>Treatment Details</Card.Title>
+						<Card.Description>
+							{#if selectedToothNumber}
+								Editing Tooth <span class="font-bold text-primary">#{selectedToothNumber}</span>
+							{:else}
+								Select a tooth from the chart to begin.
+							{/if}
+						</Card.Description>
 					</Card.Header>
 
-					<Card.Content>
-						<ScrollArea class="h-[400px]" data-lenis-prvent>
+					<Card.Content class="flex flex-col gap-4">
+						{#if currentToothStatus === 'none'}
+							<div
+								class="flex items-center gap-3 rounded-md border border-muted bg-muted/50 p-4 text-muted-foreground"
+							>
+								<ArrowLeft class="h-5 w-5" />
+								<p class="text-sm">Click on a tooth in the diagram to assign a treatment.</p>
+							</div>
+						{:else if currentToothStatus.status === 'pending'}
+							<div
+								class="flex items-center gap-3 rounded-md border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200"
+							>
+								<TriangleAlert class="h-5 w-5 shrink-0" />
+								<div class="flex flex-col">
+									<p class="text-sm font-semibold">Action Required</p>
+									<p class="text-sm">
+										Please select a treatment type below for Tooth #{selectedToothNumber}.
+									</p>
+								</div>
+							</div>
+						{:else}
+							<div
+								class="flex items-center gap-3 rounded-md border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-900 dark:bg-green-950 dark:text-green-200"
+							>
+								<CheckCircle class="h-5 w-5 shrink-0" />
+								<div class="flex flex-col">
+									<p class="text-sm font-semibold">Ready</p>
+									<p class="text-sm">
+										Tooth #{selectedToothNumber} set to: <strong>{currentToothStatus.name}</strong>
+									</p>
+								</div>
+							</div>
+						{/if}
+
+						<div class="my-2 h-px w-full bg-border"></div>
+
+						<ScrollArea class="h-[350px] pr-4">
 							{#if treatmentGroupsLoading}
-								<div class="flex h-full w-full items-center justify-center">
+								<div class="flex h-full items-center justify-center">
 									<Loader class="animate-spin" />
 								</div>
-							{:else}
-								<div class="flex flex-wrap gap-8">
-									{#if treatmentGroups.length > 0}
-										{#each treatmentGroups as group}
-											{#await getTreatmentByGroupId(group.id) then treatments}
-												<Select.Root type="single" name={group.name}>
-													<Select.Trigger class="w-72">
-														<p class="inline-flex w-full items-center gap-2">
-															<ArrowLeft />
-															<span>{group.name}</span>
-														</p>
-													</Select.Trigger>
-													<Select.Content>
-														<Select.Group>
-															<Select.Label>Fruits</Select.Label>
-															{#each treatments as treatment (treatment.id)}
-																<Select.Item value={treatment.id} label={treatment.name}>
-																	{treatment.name}
-																</Select.Item>
-															{/each}
-														</Select.Group>
-													</Select.Content>
-												</Select.Root>
-											{/await}
-										{/each}
-									{:else}
-										no grup lengt
-									{/if}
+							{:else if treatmentGroups.length > 0}
+								<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+									{#each treatmentGroups as group (group.id)}
+										{@const treatments = allTreatments.get(group.id) ?? []}
+										{@const groupName = getLocale() === 'ar' ? group.nameAr : group.name}
+
+										{@const currentTreatment = (
+											$formData.toothTreatments as TreatmentSelection[]
+										).find((t) => t.toothNumber === selectedToothNumber)}
+
+										<div class="flex flex-col gap-1.5">
+											<span class="ml-1 text-xs font-medium text-muted-foreground">{groupName}</span
+											>
+											<Select.Root
+												type="single"
+												name={`treatment-group-${group.id}`}
+												disabled={!selectedToothNumber}
+												value={currentTreatment?.treatmentId ?? ''}
+												onValueChange={(newTreatmentId) => {
+													if (selectedToothNumber && newTreatmentId) {
+														const idx = (
+															$formData.toothTreatments as TreatmentSelection[]
+														).findIndex((t) => t.toothNumber === selectedToothNumber);
+
+														if (idx !== -1) {
+															$formData.toothTreatments = (
+																$formData.toothTreatments as TreatmentSelection[]
+															).map((item, index) => {
+																if (index === idx) {
+																	return { ...item, treatmentId: newTreatmentId };
+																}
+																return item;
+															});
+														}
+													}
+												}}
+											>
+												<Select.Trigger class="w-full">
+													{groupName}
+												</Select.Trigger>
+												<Select.Content>
+													<Select.Group>
+														<Select.Label>{groupName}</Select.Label>
+														{#each treatments as treatment (treatment.id)}
+															{@const treatmentLabel =
+																getLocale() === 'ar' ? treatment.nameAr : treatment.name}
+															<Select.Item value={treatment.id} label={treatmentLabel ?? ''}>
+																{treatmentLabel}
+															</Select.Item>
+														{/each}
+													</Select.Group>
+												</Select.Content>
+											</Select.Root>
+										</div>
+									{/each}
 								</div>
+							{:else}
+								<p class="text-center text-muted-foreground">No treatment groups found.</p>
 							{/if}
 						</ScrollArea>
 					</Card.Content>
+
+					<Card.Footer>
+						<div class="flex w-full justify-between">
+							<div class="self-center text-xs text-muted-foreground">
+								{$formData.toothTreatments.length} teeth recorded
+							</div>
+							<Button type="submit" disabled={!$formData.toothTreatments.length}>Next</Button>
+						</div>
+					</Card.Footer>
 				</Card.Root>
 			</section>
 		</div>
 	{/if}
 </form>
-<!-- <Select.Root type="single" name={group.name}>
-												<Select.Trigger class="w-[180px]">trigger</Select.Trigger>
-												<Select.Content>
-													<Select.Group>
-														<Select.Label>Fruits</Select.Label>
-														{#each treatments as treatment (treatment.id)}
-															<Select.Item value={treatment.id} label={treatment.name}>
-																{treatment.name}
-															</Select.Item>
-														{/each}
-													</Select.Group>
-												</Select.Content>
-											</Select.Root> -->

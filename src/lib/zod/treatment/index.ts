@@ -22,12 +22,12 @@ export const TreatmentGroupCreateSchema = TreatmentGroupSchema.omit({
 export const TreatmentGroupUpdateSchema = TreatmentGroupSchema.partial();
 
 export const TreatmentSchema = z.object({
-	id: z.string().cuid().optional(), // auto-generated
+	id: z.string().optional(), // auto-generated
 	name: z.string().min(1, 'Treatment name is required'),
 	nameAr: z.string().optional(),
 
 	// relation
-	groupId: z.string().cuid(),
+	groupId: z.string(),
 
 	// Prisma Decimal → accept number or string
 	basePrice: z.union([z.number(), z.string()]).optional(),
@@ -54,9 +54,12 @@ export const TreatmentGroupWithTreatmentsSchema = TreatmentGroupSchema.extend({
 });
 //read thsi
 export const TreatmentGroupSearchSchema = z.object({
-  query: z.string().optional(), // partial match on group name
+	query: z.string().optional() // partial match on group name
 });
 
 export const TreatmentByGroupSchema = z.object({
-  groupId: z.string(),
+	groupId: z.string()
 });
+
+export type TreatmentGroupInput = z.infer<typeof TreatmentGroupSchema>;
+export type TreatmentInput = z.infer<typeof TreatmentSchema>;

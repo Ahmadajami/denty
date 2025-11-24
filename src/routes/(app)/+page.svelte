@@ -93,4 +93,4 @@
 <Pricing bind:isArabic />
 
 <Faq bind:isArabic />
-{data.user}
+{JSON.stringify(data.user)}

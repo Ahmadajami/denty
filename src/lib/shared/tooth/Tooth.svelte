@@ -1,74 +1,61 @@
 <script lang="ts">
 	import { mode } from 'mode-watcher';
-
 	import {
 		initialTeethData,
 		initialToothLabels,
 		initToothstyle
 	} from '$lib/shared/tooth/chartData';
 	import { type ToothItem, type ToothLabel } from '$lib/shared/tooth/chartTypes';
-	let teethData = $state<ToothItem[]>(initialTeethData);
-	let toothLabels = $state<ToothLabel[]>(initialToothLabels);
 
+	// --- 1. Props ---
+	let {
+		width = 300,
+		height = 500,
+		// Source of truth for colors from the parent
+		markedTeeth = new Map<number, string>(),
+		onSelect,
+		onReset
+	}: {
+		width?: number;
+		height?: number;
+		markedTeeth?: Map<number, string>;
+		onSelect?: (tooth: ToothItem, newState: boolean) => void;
+		onReset?: () => void;
+	} = $props();
+
+	// --- 2. State ---
+	let teethData = $state<ToothItem[]>(initialTeethData);
 	let orthoDontics = $state({ upper: false, lower: false });
 
 	const toothKeyToIndexMap: Map<string, number> = new Map(
 		initialTeethData.map((tooth, i) => [tooth.key, i])
 	);
 
+	// --- 3. Logic ---
 	function handleToothClick(toothKey: string) {
 		const toothIndex = toothKeyToIndexMap.get(toothKey);
-
 		if (toothIndex === undefined) return;
-		let newIsChecked: boolean = false;
-		teethData = teethData.map((tooth, idx) => {
-			if (idx === toothIndex) {
-				const isChecked = !tooth.checked;
-				newIsChecked = !tooth.checked;
-				return {
-					...tooth,
-					checked: isChecked,
-					color: isChecked ? (fillColor ?? tooth.color) : 'white'
-				};
-			}
-			return tooth;
-		});
 
-		toothLabels = toothLabels.map((label, idx) =>
-			idx === toothIndex ? { ...label, checked: !label.checked } : label
-		);
+		// Check against the Map passed from parent
+		const currentNumber = Number(toothKey);
+		const isCurrentlyChecked = markedTeeth.has(currentNumber);
 
 		if (onSelect) {
-			const updatedTooth = teethData[toothIndex];
-			onSelect(updatedTooth, newIsChecked);
+			onSelect(teethData[toothIndex], !isCurrentlyChecked);
 		}
 	}
+
 	function onSpotClick(event: MouseEvent) {
 		const target = event.target as SVGElement;
 		const key = target.dataset.key;
 		if (key) handleToothClick(key);
 	}
 
-	function reset() {
-		teethData = initialTeethData;
-		toothLabels = initialToothLabels;
+	export function reset() {
 		orthoDontics.upper = false;
 		orthoDontics.lower = false;
 		onReset?.();
 	}
-	let {
-		width = 300,
-		height = 500,
-		fillColor,
-		onSelect,
-		onReset
-	}: {
-		width?: number;
-		height?: number;
-		fillColor?: string;
-		onSelect?: (tooth: ToothItem, newState: boolean) => void;
-		onReset?: () => void;
-	} = $props();
 </script>
 
 <svg
@@ -81,11 +68,13 @@
 	{height}
 >
 	<g direction="ltr" id="toothLabels">
-		{#each toothLabels as tooth (tooth.id)}
+		{#each initialToothLabels as tooth (tooth.id)}
+			{@const isChecked = markedTeeth.has(Number(tooth.id))}
 			<text
 				id={tooth.id}
 				transform={tooth.transform}
 				font-size="21px"
+				font-weight={isChecked ? 'bold' : 'normal'}
 				fill={mode.current === 'dark' ? 'white' : 'black'}>{tooth.label}</text
 			>
 		{/each}
@@ -93,33 +82,36 @@
 
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<g direction="ltr" id="Spots" onclick={onSpotClick}>
+	<g direction="ltr" id="Spots" onclick={onSpotClick} style="cursor: pointer;">
 		{#each teethData as tooth, index (tooth.key)}
-			{#if initToothstyle[index].type === 'polygon'}
+			{@const style = initToothstyle[index]}
+			{@const activeColor = markedTeeth.get(Number(tooth.key))}
+
+			{#if style.type === 'polygon'}
 				<polygon
 					direction="ltr"
 					class="tooth"
 					id={tooth.id}
 					data-key={tooth.key}
 					fill-opacity="0.6"
-					fill={tooth.color}
-					points={initToothstyle[index].coords}
+					fill={activeColor ?? 'transparent'}
+					points={style.coords}
 				/>
-			{:else if initToothstyle[index].type === 'path'}
+			{:else}
 				<path
 					direction="ltr"
 					class="tooth"
 					id={tooth.id}
-					fill={tooth.color}
-					fill-opacity="0.6"
 					data-key={tooth.key}
-					d={initToothstyle[index].coords}
+					fill-opacity="0.6"
+					fill={activeColor ?? 'transparent'}
+					d={style.coords}
 				/>
 			{/if}
 		{/each}
 	</g>
 
-	<g direction="ltr" id="adult-outlines">
+	<g direction="ltr" id="adult-outlines" class="pointer-events-none">
 		<g id="XMLID_210_">
 			<path
 				id="XMLID_208_"
