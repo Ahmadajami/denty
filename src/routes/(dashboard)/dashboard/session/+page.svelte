@@ -4,6 +4,10 @@
 	import ArrowRight from '@lucide/svelte/icons/arrow-right';
 	import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
 	import CheckCircle from '@lucide/svelte/icons/check-circle';
+	import User from '@lucide/svelte/icons/user';
+	import Phone from '@lucide/svelte/icons/phone';
+	import Calendar from '@lucide/svelte/icons/calendar';
+	import FileText from '@lucide/svelte/icons/file-text';
 </script>
 
 <script lang="ts">
@@ -14,6 +18,7 @@
 	import { zod4 } from 'sveltekit-superforms/adapters';
 	import type { E164Number } from 'svelte-tel-input/types';
 	import type { PageProps } from './$types';
+	// NOTE: Imported schemas must align with: Step 0 (Phone), Step 1 (Treatments), Last (Review)
 	import { reportLastStep, reportStep0, reportStep1, reviewStep } from '$lib/zod/session';
 	import AddPatient from '$lib/shared/AddPatient.svelte';
 	import { toast } from 'svelte-sonner';
@@ -55,6 +60,7 @@
 		dataType: 'json',
 		taintedMessage: true,
 		onSubmit: async ({ cancel }) => {
+			// Only submit to server if we are on the last step
 			if (isLastStep) return;
 
 			cancel();
@@ -66,9 +72,11 @@
 		}
 	});
 
-	const { form: formData, enhance, delayed } = form; // removed message if unused
+	const { form: formData, enhance, delayed, errors } = form;
 
-	const STEPS = [zod4(reportStep0), zod4(reportStep1), zod4(reportLastStep), zod4(reviewStep)];
+	// Define 3 steps: 1. Patient (Phone), 2. Treatments, 3. Review
+	// Step 0 (Phone) -> Step 1 (Treatments + Phone) -> Review (Final Check)
+	const STEPS = [zod4(reportStep0), zod4(reportStep1), zod4(reportLastStep)];
 	let currentStep = $state(1);
 	let query = $state<E164Number>('');
 	let addPatientDialog = $state(false);
@@ -105,15 +113,14 @@
 			}
 		});
 
-		// Highlight selected tooth
 		if (selectedToothNumber && !colors.has(selectedToothNumber)) {
-			colors.set(selectedToothNumber, '#3b82f6'); // Blue highlight
+			colors.set(selectedToothNumber, '#3b82f6');
 		}
 
 		return colors;
 	});
 
-	// Derived: Check if the currently selected tooth has a valid treatment assigned
+	// Derived: Status of current selection
 	const currentToothStatus = $derived.by(() => {
 		if (!selectedToothNumber) return 'none';
 
@@ -122,7 +129,6 @@
 		);
 
 		if (selection && selection.treatmentId) {
-			// Find name for display
 			let tName = 'Treatment Selected';
 			for (const treatments of allTreatments.values()) {
 				const found = treatments.find((t) => t.id === selection.treatmentId);
@@ -137,12 +143,38 @@
 		return { status: 'pending', name: '' };
 	});
 
-	// Effect: Update Validators
+	// Derived: Prepare data for Review Step
+	const reviewData = $derived.by(() => {
+		const items: Array<{ tooth: number; treatment: string; group: string; color: string }> = [];
+		($formData.toothTreatments as TreatmentSelection[]).forEach((item) => {
+			if (!item.treatmentId) return;
+
+			// Find details
+			let tName = 'Unknown';
+			let gName = 'General';
+			let color = '#ccc';
+
+			for (const [groupId, treatments] of allTreatments.entries()) {
+				const found = treatments.find((t) => t.id === item.treatmentId);
+				if (found) {
+					tName = getLocale() === 'ar' ? (found.nameAr ?? found.name) : found.name;
+					const grp = allGroupsMap.get(groupId);
+					if (grp) {
+						gName = getLocale() === 'ar' ? (grp.nameAr ?? grp.name) : grp.name;
+						color = grp.color;
+					}
+					break;
+				}
+			}
+			items.push({ tooth: item.toothNumber, treatment: tName, group: gName, color });
+		});
+		return items.sort((a, b) => a.tooth - b.tooth);
+	});
+
 	$effect(() => {
 		form.options.validators = STEPS[currentStep - 1];
 	});
 
-	// Effect: Phone init
 	$effect(() => {
 		if (data.PhoneNumber) {
 			try {
@@ -158,18 +190,16 @@
 		}
 	});
 
-	// Effect: Toast Helper
-	const toastMessage =
-		'This tooth diagram displays all teeth that have received treatment. To record a new procedure, first select the treatment you performed during the session, and then click on the corresponding tooth in the diagram.';
+	// Toast helper - Adjusted to show only on Treatment Step (Step 2)
 	$effect(() => {
 		const shouldShow = localStorage.getItem('showToothelp') !== 'false';
-		if (currentStep === 1 && shouldShow) {
-			toast(toastMessage, {
+		if (currentStep === 2 && shouldShow) {
+			toast('Treatment Selection', {
+				description:
+					'Select a treatment, then click a tooth to apply it. Click the same tooth again to edit.',
 				action: {
 					label: `Don't show again`,
-					onClick: () => {
-						localStorage.setItem('showToothelp', 'false');
-					}
+					onClick: () => localStorage.setItem('showToothelp', 'false')
 				},
 				position: 'bottom-center',
 				duration: 9000
@@ -177,6 +207,7 @@
 		}
 	});
 
+	// --- 6. Helpers ---
 	function getE164Number(phoneNumber: string): string | null {
 		try {
 			const parsedNumber = parsePhoneNumberWithError(phoneNumber);
@@ -223,7 +254,7 @@
 
 			await Promise.all(fetchPromises);
 		} catch (error) {
-			console.error('Failed to load treatments data:', error);
+			console.error('Failed data load', error);
 			toast.error('Failed to load treatments data.');
 		} finally {
 			treatmentGroupsLoading = false;
@@ -233,26 +264,11 @@
 	// --- 8. Handlers ---
 	function handleToothSelect(toothKey: string) {
 		const toothNumber = Number(toothKey);
-		const existingTreatmentIndex = ($formData.toothTreatments as TreatmentSelection[]).findIndex(
-			(t) => t.toothNumber === toothNumber
-		);
-
-		if (toothNumber === selectedToothNumber && existingTreatmentIndex !== -1) {
-			// Toggle Off
-			$formData.toothTreatments = ($formData.toothTreatments as TreatmentSelection[]).filter(
-				(t, idx) => idx !== existingTreatmentIndex
-			);
-			selectedToothNumber = null;
-		} else {
-			// Select New
-			selectedToothNumber = toothNumber;
-			if (existingTreatmentIndex === -1) {
-				$formData.toothTreatments = [
-					...($formData.toothTreatments as TreatmentSelection[]),
-					{ toothNumber: toothNumber, treatmentId: '' }
-				];
-			}
+		if (selectedToothNumber === toothNumber) {
+			selectedToothNumber = null; // Deselect if clicking same
+			return;
 		}
+		selectedToothNumber = toothNumber;
 	}
 
 	onMount(() => {
@@ -276,6 +292,8 @@
 	</div>
 {/if}
 
+<SuperDebug data={$formData} />
+{JSON.stringify(errors)}
 <AddPatient
 	patientForm={data.patientForm}
 	bind:addPatientDialog
@@ -288,6 +306,7 @@
 	{/snippet}
 </AddPatient>
 
+<!-- Navigation Header -->
 <div class="flex w-full items-center justify-between border-b border-gray-200 px-6 py-2 shadow-sm">
 	<div class="hidden items-center gap-2 md:flex">
 		<Button size="icon" variant="ghost" onclick={() => history.back()} class="h-8 w-8">
@@ -308,8 +327,9 @@
 	</div>
 </div>
 
-<form method="POST" action="?/new_session" use:enhance class="w-full">
-	{#if currentStep === 2}
+<form method="POST" action="?/new_session" use:enhance class=" w-full">
+	<!-- STEP 1: Patient Info -->
+	{#if currentStep === 1}
 		<section
 			class="flex h-full w-full animate-in items-center justify-center p-4 fade-in slide-in-from-bottom-4"
 		>
@@ -324,11 +344,13 @@
 				}}
 			>
 				{#snippet submit()}
-					<Button type="submit" disabled={!$formData.phone}>Next</Button>
+					<Button type="submit" disabled={!$formData.phone} class="w-full">Next</Button>
 				{/snippet}
 			</PatientInfo>
 		</section>
-	{:else if currentStep === 1}
+
+		<!-- STEP 2: Tooth Chart & Treatments -->
+	{:else if currentStep === 2}
 		<div
 			class="flex h-full animate-in flex-col gap-4 p-4 duration-300 ease-in-out fade-in slide-in-from-bottom-4 md:p-8"
 		>
@@ -356,7 +378,25 @@
 
 				<Card.Root class="basis-full lg:basis-[60%]">
 					<Card.Header>
-						<Card.Title>Treatment Details</Card.Title>
+						<div class="flex items-center justify-between">
+							<Card.Title>Treatment Details</Card.Title>
+							{#if currentToothStatus !== 'none' && currentToothStatus.status === 'complete'}
+								<Button
+									variant="destructive"
+									size="sm"
+									class="h-7 text-xs"
+									onclick={() => {
+										if (selectedToothNumber) {
+											$formData.toothTreatments = $formData.toothTreatments.filter(
+												(t) => t.toothNumber !== selectedToothNumber
+											);
+										}
+									}}
+								>
+									Clear Treatment
+								</Button>
+							{/if}
+						</div>
 						<Card.Description>
 							{#if selectedToothNumber}
 								Editing Tooth <span class="font-bold text-primary">#{selectedToothNumber}</span>
@@ -424,7 +464,9 @@
 												type="single"
 												name={`treatment-group-${group.id}`}
 												disabled={!selectedToothNumber}
-												value={currentTreatment?.treatmentId ?? ''}
+												value={($formData.toothTreatments as TreatmentSelection[]).find(
+													(t) => t.toothNumber === selectedToothNumber
+												)?.treatmentId ?? ''}
 												onValueChange={(newTreatmentId) => {
 													if (selectedToothNumber && newTreatmentId) {
 														const idx = (
@@ -432,6 +474,7 @@
 														).findIndex((t) => t.toothNumber === selectedToothNumber);
 
 														if (idx !== -1) {
+															// Update existing
 															$formData.toothTreatments = (
 																$formData.toothTreatments as TreatmentSelection[]
 															).map((item, index) => {
@@ -440,6 +483,12 @@
 																}
 																return item;
 															});
+														} else {
+															// Create new
+															$formData.toothTreatments = [
+																...($formData.toothTreatments as TreatmentSelection[]),
+																{ toothNumber: selectedToothNumber, treatmentId: newTreatmentId }
+															];
 														}
 													}
 												}}
@@ -471,14 +520,111 @@
 
 					<Card.Footer>
 						<div class="flex w-full justify-between">
-							<div class="self-center text-xs text-muted-foreground">
-								{$formData.toothTreatments.length} teeth recorded
+							<Button variant="outline" type="button" onclick={() => currentStep--}>Back</Button>
+							<div class="flex items-center gap-4">
+								<div class="hidden self-center text-xs text-muted-foreground sm:block">
+									{$formData.toothTreatments.length} teeth recorded
+								</div>
+								<Button type="submit" disabled={!$formData.toothTreatments.length}>Next</Button>
 							</div>
-							<Button type="submit" disabled={!$formData.toothTreatments.length}>Next</Button>
 						</div>
 					</Card.Footer>
 				</Card.Root>
 			</section>
 		</div>
+
+		<!-- STEP 3: Review Step -->
+	{:else if currentStep === 3}
+		<section
+			class="mx-auto flex h-full w-full max-w-3xl animate-in flex-col justify-center gap-6 p-4 fade-in slide-in-from-bottom-4 md:p-8"
+		>
+			<Card.Root class="w-full shadow-lg">
+				<Card.Header class="border-b pb-4">
+					<div class="flex items-center justify-between">
+						<div>
+							<Card.Title class="text-xl">Review Session</Card.Title>
+							<Card.Description>Verify details before submitting.</Card.Description>
+						</div>
+						<FileText class="h-8 w-8 text-muted-foreground opacity-20" />
+					</div>
+				</Card.Header>
+
+				<Card.Content class="flex flex-col gap-6 pt-6">
+					<!-- Patient Details Summary -->
+					<div class="flex flex-col gap-3">
+						<h3 class="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+							<User class="h-4 w-4" /> Patient Information
+						</h3>
+						<div class="rounded-md border bg-muted/30 p-3">
+							<div class="flex items-center gap-3">
+								<div
+									class="flex h-10 w-10 items-center justify-center rounded-full border bg-background shadow-sm"
+								>
+									<Phone class="h-5 w-5 text-primary" />
+								</div>
+								<div class="flex flex-col">
+									<span class="text-sm font-medium">Phone Number</span>
+									<span class="text-lg font-bold tracking-tight">{$formData.phone}</span>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="h-px w-full bg-border"></div>
+
+					<!-- Treatment List Summary -->
+					<div class="flex flex-col gap-3">
+						<div class="flex items-center justify-between">
+							<h3 class="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+								<Calendar class="h-4 w-4" /> Treatments ({reviewData.length})
+							</h3>
+						</div>
+
+						<ScrollArea class="h-[220px] rounded-md border bg-background">
+							{#if reviewData.length === 0}
+								<div
+									class="flex h-full flex-col items-center justify-center gap-2 p-4 text-muted-foreground"
+								>
+									<TriangleAlert class="h-8 w-8 opacity-50" />
+									<p>No treatments recorded.</p>
+								</div>
+							{:else}
+								<div class="flex flex-col divide-y">
+									{#each reviewData as item (item.tooth)}
+										<div
+											class="flex items-center justify-between p-3 transition-colors hover:bg-muted/50"
+										>
+											<div class="flex items-center gap-3">
+												<!-- Tooth Badge -->
+												<div
+													class="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary ring-1 ring-primary/20 ring-inset"
+												>
+													#{item.tooth}
+												</div>
+												<div class="flex flex-col">
+													<span class="font-medium">{item.treatment}</span>
+													<span class="text-xs text-muted-foreground">{item.group}</span>
+												</div>
+											</div>
+											<!-- Color Indicator -->
+											<div
+												class="h-3 w-3 rounded-full shadow-sm"
+												style="background-color: {item.color}"
+												title={item.group}
+											></div>
+										</div>
+									{/each}
+								</div>
+							{/if}
+						</ScrollArea>
+					</div>
+				</Card.Content>
+
+				<Card.Footer class="flex items-center justify-between gap-4 border-t bg-muted/20 p-6">
+					<Button variant="outline" onclick={() => currentStep--} class="w-32">Back</Button>
+					<Button type="submit" class="w-full min-w-[140px] sm:w-auto">Confirm & Submit</Button>
+				</Card.Footer>
+			</Card.Root>
+		</section>
 	{/if}
 </form>

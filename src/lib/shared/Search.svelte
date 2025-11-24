@@ -9,7 +9,8 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { PhoneInput } from '$lib/components/ui/phone-input';
 	import type { E164Number } from 'svelte-tel-input/types';
-	import type { PatientType } from '$lib/zod/patient';
+
+	import type { Patient } from '$lib/server/db/generated/prisma/client';
 
 	const DEBOUNCETIME = 900;
 
@@ -23,7 +24,7 @@
 		query = $bindable<E164Number>('')
 	}: {
 		onNoPatient: () => void;
-		row?: Snippet<[PatientType]>;
+		row?: Snippet<[Patient]>;
 		query?: string;
 	} = $props();
 
@@ -33,7 +34,7 @@
 		return () => clearTimeout(id);
 	});
 
-	async function searchPatients(searchQuery: string): Promise<PatientType[]> {
+	async function searchPatients(searchQuery: string): Promise<Patient[]> {
 		if (!searchQuery) return [];
 
 		if (controller) controller.abort();
@@ -45,7 +46,7 @@
 				signal
 			});
 			if (!res.ok) throw new Error(`Search failed: ${res.status}`);
-			return (await res.json()) as PatientType[];
+			return (await res.json()) as Patient[];
 		} catch (error) {
 			if (error instanceof Error && error.name === 'AbortError') return [];
 			throw error;

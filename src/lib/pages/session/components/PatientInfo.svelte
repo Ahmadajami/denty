@@ -57,7 +57,7 @@
 </script>
 
 <Card.Root
-	class="animate-in fade-in slide-in-from-bottom-4 w-full max-w-md transition-all duration-300 ease-in-out "
+	class="w-full max-w-md animate-in transition-all duration-300 ease-in-out fade-in slide-in-from-bottom-4 "
 >
 	<Card.Header class="flex flex-col items-center space-y-2 pb-4 text-center">
 		<h2 class="text-3xl font-semibold tracking-tight">Patient Information</h2>
@@ -83,14 +83,14 @@
 							<Form.Control>
 								{#snippet children({ props })}
 									<Form.Label
-										class="group has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/10 hover:bg-muted/30 flex w-full items-center justify-between  space-y-8 rounded-lg p-3 transition-all duration-200 hover:cursor-pointer "
+										class="group flex w-full items-center justify-between space-y-8 rounded-lg p-3  transition-all duration-200 hover:cursor-pointer hover:bg-muted/30 has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/10 "
 									>
-										<RadioGroup.Item value={p.phone.toString()} class="sr-only" {...props} />
+										<RadioGroup.Item value={p.phoneNumber} class="sr-only" {...props} />
 										<div class="flex flex-col">
 											<p class="text-sm font-medium">
 												{getLocale() === 'ar' ? p.fullnameAr : p.fullname}
 											</p>
-											<p class="text-xs">{p.phone}</p>
+											<p class="text-xs">{p.phoneNumber}</p>
 										</div>
 									</Form.Label>
 								{/snippet}
