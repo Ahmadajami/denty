@@ -4,9 +4,10 @@ import type { PageServerLoad } from './$types';
 import { reportLastStep } from '$lib/zod/session';
 import { zod4 } from 'sveltekit-superforms/adapters';
 import { initialTeethData, initToothstyle } from '$lib/shared/tooth/chartData';
-import { fail } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import { crudPatientSchema } from '$lib/zod/patient';
 import nodemailer from 'nodemailer';
+import { DOPPIO_API_KEY, GMAILAPP } from '$env/static/private';
 
 export const load: PageServerLoad = async ({ url }) => {
 	const form = await superValidate(zod4(reportLastStep));
@@ -126,10 +127,10 @@ export const actions = {
 
 		if (!form.valid) return fail(400, { form });
 
-		console.log('Form is valid. Preparing PDF...');
+		console.log('Form is valid. Generating PDF via Doppio...');
 
 		try {
-			// --- 1. FETCH DATA CONTEXT ---
+			// 1. Fetch Data Context
 			const groupsRes = await fetch('/dashboard/api/treatment-groups.json');
 			const groupsData = await groupsRes.json();
 			const groupMap = new Map<string, any>(groupsData.map((g: any) => [g.id, g]));
@@ -150,66 +151,76 @@ export const actions = {
 				groupMap
 			);
 
-			let browser;
-
-			// Vercel / Production Environment
-			if (process.env.VERCEL_ENV === 'production' || process.env.VERCEL_ENV === 'preview') {
-				const chromium = await import('@sparticuz/chromium-min');
-				const puppeteer = await import('puppeteer-core');
-
-				chromium.default.setGraphicsMode = false;
-
-				browser = await puppeteer.default.launch({
-					args: chromium.default.args,
-					defaultViewport: { width: 1920, height: 1080 },
-					executablePath: await chromium.default.executablePath(),
-					headless: true // Hardcoded true for serverless
-				});
-			}
-			// Local Development Environment
-			else {
-				const puppeteer = await import('puppeteer');
-				// launch() calls the local Chrome binary.
-				// If this fails, run `npx puppeteer browsers install chrome`
-				browser = await puppeteer.default.launch({
-					headless: true,
-					args: ['--no-sandbox', '--disable-setuid-sandbox']
-				});
+			if (!DOPPIO_API_KEY) {
+				throw new Error('DOPPIO_API_KEY is not configured.');
 			}
 
-			const page = await browser.newPage();
-			await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-			const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
-			await browser.close();
+			// Base64 encode the HTML content as required by Doppio docs
+			const encodedHTML = Buffer.from(htmlContent, 'utf8').toString('base64');
 
-			// --- 3. SEND EMAIL ---
+			const doppioRes = await fetch('https://api.doppio.sh/v1/render/pdf/direct', {
+				method: 'POST',
+				headers: {
+					Authorization: `Bearer ${DOPPIO_API_KEY}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					page: {
+						// The documentation requires 'setContent' with 'html' (base64 encoded)
+						setContent: {
+							html: encodedHTML
+						},
+						// PDF Options
+						pdf: {
+							printBackground: true,
+							format: 'A4',
+							margin: {
+								top: '20px',
+								right: '20px',
+								bottom: '20px',
+								left: '20px'
+							}
+						}
+					}
+				})
+			});
+
+			if (!doppioRes.ok) {
+				const errorText = await doppioRes.text();
+				throw new Error(`Doppio API Error: ${doppioRes.status} - ${errorText}`);
+			}
+
+			const pdfArrayBuffer = await doppioRes.arrayBuffer();
+			const pdfBuffer = Buffer.from(pdfArrayBuffer);
+
+			// 3. Send Email
 			const transporter = nodemailer.createTransport({
 				service: 'gmail',
 				auth: {
-					user: 'YOUR_GMAIL_ADDRESS@gmail.com', // ENV VAR RECOMMENDED
-					pass: 'xxxx xxxx xxxx xxxx' // APP PASSWORD
+					user: 'a.alajami963@@gmail.com', // Use ENV vars
+					pass: GMAILAPP // Use ENV vars
 				}
 			});
 
 			await transporter.sendMail({
-				from: '"Dental Clinic" <YOUR_GMAIL_ADDRESS@gmail.com>',
-				to: 'doctor@example.com',
-				subject: `New Session Report - ${form.data.phone}`,
-				text: `A new session has been recorded for patient ${form.data.phone}.`,
+				from: 'Dental Clinic',
+				to: 'ahmad_2000_aj@hotmail.com',
+				subject: `New Session Report `,
+				text: `A new session has been recorded for patient.`,
 				attachments: [
 					{
 						filename: `session-${Date.now()}.pdf`,
-						content: Buffer.from(pdfBuffer)
+						content: pdfBuffer
 					}
 				]
 			});
 
-			console.log('Email sent successfully');
+			console.log('✅ Email sent successfully');
 		} catch (error) {
-			console.error('Error processing session:', error);
-			// Optional: return fail(500, { form, error: 'Failed to generate PDF' })
+			console.error('❌ Error processing session:', error);
+			if (error instanceof Error) console.error(error.message);
 		}
 
-		return message(form, 'Session saved and report emailed!');
+		return redirect('/dashboard/session');
 	}
 };

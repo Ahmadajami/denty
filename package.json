@@ -38,7 +38,6 @@
 		"prettier-plugin-svelte": "^3.4.0",
 		"prettier-plugin-tailwindcss": "^0.7.1",
 		"prisma": "^7.0.0",
-		"puppeteer": "^24.31.0",
 		"svelte": "^5.41.0",
 		"svelte-check": "^4.3.3",
 		"svelte-sonner": "^1.0.6",
@@ -56,12 +55,9 @@
 	"dependencies": {
 		"@prisma/client": "^7.0.0",
 		"@prisma/extension-accelerate": "^2.0.2",
-		"@sparticuz/chromium": "^141.0.0",
-		"@sparticuz/chromium-min": "^141.0.0",
 		"bcrypt": "^6.0.0",
 		"mode-watcher": "^1.1.0",
 		"nodemailer": "^7.0.10",
-		"puppeteer-core": "^24.31.0",
 		"svelte-inview": "^4.0.4",
 		"svelte-motion": "^0.12.2",
 		"zod": "^4.1.12"
