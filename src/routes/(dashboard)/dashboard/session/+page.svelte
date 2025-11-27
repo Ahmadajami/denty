@@ -67,16 +67,26 @@
 
 	const STEPS = [zod4(reportStep0), zod4(reportStep1), zod4(reportLastStep)];
 
-	const form = superForm(data.form, {
-		dataType: 'json',
-		taintedMessage: true,
-		onSubmit: async ({ cancel }) => {
-			if (currentStep === STEPS.length) return;
-			cancel();
-			const result = await form.validateForm({ update: true });
-			if (result.valid) currentStep++;
-		}
-	});
+	
+const form = superForm(data.form, {
+    dataType: 'json',
+    taintedMessage: true,
+    
+    onSubmit: async ({ cancel }) => {
+        if (currentStep === STEPS.length) return;
+        cancel();
+        const result = await form.validateForm({ update: true });
+        if (result.valid) currentStep++;
+    },
+
+    // Add this block here
+    async onUpdated({ form }) {
+        if (form.valid) {
+            currentStep = 1;
+        }
+    }
+});
+
 
 	const { form: formData, enhance, delayed } = form;
 
