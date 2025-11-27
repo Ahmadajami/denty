@@ -6,7 +6,6 @@
 	import { normalizeTelInput, parsePhoneNumberWithError } from 'svelte-tel-input';
 	import type { E164Number } from 'svelte-tel-input/types';
 	import type { Snippet } from 'svelte';
-
 	import { getLocale } from '$lib/paraglide/runtime';
 
 	let {
@@ -83,14 +82,22 @@
 							<Form.Control>
 								{#snippet children({ props })}
 									<Form.Label
-										class="group flex w-full items-center justify-between space-y-8 rounded-lg p-3  transition-all duration-200 hover:cursor-pointer hover:bg-muted/30 has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/10 "
+										class="relative my-1 flex w-full cursor-pointer items-center justify-between rounded-lg  p-4 transition-all hover:bg-accent hover:text-accent-foreground"
 									>
-										<RadioGroup.Item value={p.phoneNumber} class="sr-only" {...props} />
-										<div class="flex flex-col">
-											<p class="text-sm font-medium">
+										<RadioGroup.Item value={p.phoneNumber} class="peer sr-only" {...props} />
+
+										<div
+											class="pointer-events-none absolute inset-0 rounded-lg border-2 border-transparent peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10"
+										></div>
+
+										<!-- Content Wrapper -->
+										<div class="z-10 flex w-full flex-col text-left rtl:text-right">
+											<p class="text-sm leading-none font-medium">
 												{getLocale() === 'ar' ? p.fullnameAr : p.fullname}
 											</p>
-											<p class="text-xs">{p.phoneNumber}</p>
+											<p class="mt-1.5 text-xs text-muted-foreground rtl:text-right" dir="ltr">
+												{p.phoneNumber}
+											</p>
 										</div>
 									</Form.Label>
 								{/snippet}

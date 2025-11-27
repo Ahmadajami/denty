@@ -1,23 +1,39 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { superValidate, message } from 'sveltekit-superforms/server';
-import type { PageServerLoad } from './$types';
+import { superValidate, fail } from 'sveltekit-superforms';
+import type { Actions, PageServerLoad } from './$types';
 import { reportLastStep } from '$lib/zod/session';
 import { zod4 } from 'sveltekit-superforms/adapters';
-import { initialTeethData, initToothstyle } from '$lib/shared/tooth/chartData';
-import { fail, redirect } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import { crudPatientSchema } from '$lib/zod/patient';
 import nodemailer from 'nodemailer';
 import { DOPPIO_API_KEY, GMAILAPP } from '$env/static/private';
+import { localizeHref } from '$lib/paraglide/runtime.js';
+import { getAllTreatmentsGroups } from '$lib/server/treatment';
+import { db } from '$lib/server/prisma';
+import { initialTeethData, initToothstyle } from '$lib/shared/tooth/chartData';
 
 export const load: PageServerLoad = async ({ url }) => {
 	const form = await superValidate(zod4(reportLastStep));
 	const patientForm = await superValidate(zod4(crudPatientSchema));
 	const PhoneNumber = url.searchParams.get('phone');
+	const treatmentGroups = await getAllTreatmentsGroups();
+	const treatments = await db.treatment.findMany({
+		orderBy: {
+			name: 'asc'
+		}
+	});
+
+	const serializedTreatments = treatments.map((t) => ({
+		...t,
+		basePrice: t.basePrice ? Number(t.basePrice) : null
+	}));
 
 	return {
 		form,
 		PhoneNumber,
-		patientForm
+		patientForm,
+		treatmentGroups,
+		treatments: serializedTreatments
 	};
 };
 
@@ -32,18 +48,24 @@ function generateReportHtml(
 	const svgContent = initialTeethData
 		.map((tooth, index) => {
 			const style = initToothstyle[index];
-			// Find if this tooth has a treatment
-			const treatment = toothTreatments.find((t) => t.toothNumber === Number(tooth.key));
+			// Find ALL treatments for this tooth
+			const treatmentsForTooth = toothTreatments.filter(
+				(t) => t.toothNumber === Number(tooth.key)
+			);
 
-			// Determine color
+			// Determine color: use the color of the LAST added treatment
 			let fill = 'white'; // default
-			if (treatment && treatment.treatmentId) {
-				const tDetails = treatmentMap.get(treatment.treatmentId);
-				if (tDetails) {
-					const group = groupMap.get(tDetails.groupId);
-					if (group) fill = group.color;
-				} else {
-					fill = '#3b82f6';
+			if (treatmentsForTooth.length > 0) {
+				// Get the last one
+				const lastTreatment = treatmentsForTooth[treatmentsForTooth.length - 1];
+				if (lastTreatment && lastTreatment.treatmentId) {
+					const tDetails = treatmentMap.get(lastTreatment.treatmentId);
+					if (tDetails) {
+						const group = groupMap.get(tDetails.groupId);
+						if (group) fill = group.color;
+					} else {
+						fill = '#3b82f6';
+					}
 				}
 			}
 
@@ -56,8 +78,10 @@ function generateReportHtml(
 		})
 		.join('\n');
 
-	// 2. Build the Table Rows
-	const rows = toothTreatments
+	// 2. Build the Table Rows (Sorted by Tooth Number)
+	const sortedTreatments = [...toothTreatments].sort((a, b) => a.toothNumber - b.toothNumber);
+
+	const rows = sortedTreatments
 		.map((t) => {
 			const details = treatmentMap.get(t.treatmentId);
 			const group = details ? groupMap.get(details.groupId) : null;
@@ -120,7 +144,7 @@ function generateReportHtml(
     </html>`;
 }
 
-export const actions = {
+export const actions: Actions = {
 	new_session: async ({ request, fetch }) => {
 		console.log('Server action called');
 		const form = await superValidate(request, zod4(reportLastStep));
@@ -131,18 +155,12 @@ export const actions = {
 
 		try {
 			// 1. Fetch Data Context
-			const groupsRes = await fetch('/dashboard/api/treatment-groups.json');
-			const groupsData = await groupsRes.json();
-			const groupMap = new Map<string, any>(groupsData.map((g: any) => [g.id, g]));
+			const groups = await getAllTreatmentsGroups();
+			const groupMap = new Map<string, any>(groups.map((g: any) => [g.id, g]));
 
+			const treatments = await db.treatment.findMany();
 			const treatmentMap = new Map<string, any>();
-			await Promise.all(
-				groupsData.map(async (group: any) => {
-					const res = await fetch(`/dashboard/api/treatment.json/${group.id}`);
-					const treatments = await res.json();
-					treatments.forEach((t: any) => treatmentMap.set(t.id, t));
-				})
-			);
+			treatments.forEach((t: any) => treatmentMap.set(t.id, t));
 
 			const htmlContent = generateReportHtml(
 				form.data.phone,
@@ -155,7 +173,7 @@ export const actions = {
 				throw new Error('DOPPIO_API_KEY is not configured.');
 			}
 
-			// Base64 encode the HTML content as required by Doppio docs
+			
 			const encodedHTML = Buffer.from(htmlContent, 'utf8').toString('base64');
 
 			const doppioRes = await fetch('https://api.doppio.sh/v1/render/pdf/direct', {
@@ -197,8 +215,8 @@ export const actions = {
 			const transporter = nodemailer.createTransport({
 				service: 'gmail',
 				auth: {
-					user: 'a.alajami963@@gmail.com', // Use ENV vars
-					pass: GMAILAPP // Use ENV vars
+					user: 'a.alajami963@gmail.com', 
+					pass: GMAILAPP 
 				}
 			});
 
@@ -221,6 +239,6 @@ export const actions = {
 			if (error instanceof Error) console.error(error.message);
 		}
 
-		return redirect('/dashboard/session');
+		redirect(301, localizeHref('/dashboard/session'));
 	}
 };

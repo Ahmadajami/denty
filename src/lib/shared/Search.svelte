@@ -64,7 +64,7 @@
 
 	<!-- Search results -->
 	<ScrollArea class="mt-3 h-[220px]" data-lenis-prevent>
-		<ul class="relative h-full divide-y">
+		<ul class="relative h-full space-y-3 divide-y-2">
 			{#if needSearchFor}
 				{#await searchPatients(needSearchFor)}
 					<!-- Loading state -->
@@ -84,7 +84,9 @@
 						<!-- Render results -->
 						{#each list as p}
 							{#if row}
-								{@render row(p)}
+								<li class="my-2">
+									{@render row(p)}
+								</li>
 							{:else}
 								<li class="flex items-center gap-4 px-4 py-3">
 									<PatientAvatar {p} />

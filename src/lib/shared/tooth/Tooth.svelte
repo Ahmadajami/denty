@@ -7,23 +7,22 @@
 	} from '$lib/shared/tooth/chartData';
 	import { type ToothItem, type ToothLabel } from '$lib/shared/tooth/chartTypes';
 
-	// --- 1. Props ---
 	let {
 		width = 300,
 		height = 500,
 		// Source of truth for colors from the parent
-		markedTeeth = new Map<number, string>(),
+		markedTeeth = new Map<number, string[]>(),
 		onSelect,
 		onReset
 	}: {
 		width?: number;
 		height?: number;
-		markedTeeth?: Map<number, string>;
+		// Updated type: Map<number, string[]> instead of string to support multiple colors
+		markedTeeth?: Map<number, string[]>;
 		onSelect?: (tooth: ToothItem, newState: boolean) => void;
 		onReset?: () => void;
 	} = $props();
 
-	// --- 2. State ---
 	let teethData = $state<ToothItem[]>(initialTeethData);
 	let orthoDontics = $state({ upper: false, lower: false });
 
@@ -36,7 +35,6 @@
 		const toothIndex = toothKeyToIndexMap.get(toothKey);
 		if (toothIndex === undefined) return;
 
-		// Check against the Map passed from parent
 		const currentNumber = Number(toothKey);
 		const isCurrentlyChecked = markedTeeth.has(currentNumber);
 
@@ -56,6 +54,11 @@
 		orthoDontics.lower = false;
 		onReset?.();
 	}
+
+	// Helper to create a unique gradient ID for each tooth
+	function getGradientId(toothId: string) {
+		return `grad-${toothId}`;
+	}
 </script>
 
 <svg
@@ -67,6 +70,20 @@
 	{width}
 	{height}
 >
+	<!-- Definitions for Gradients -->
+	<defs>
+		{#each teethData as tooth (tooth.key)}
+			{@const colors = markedTeeth.get(Number(tooth.key))}
+			{#if colors && colors.length > 1}
+				<linearGradient id={getGradientId(tooth.id)} x1="0%" y1="0%" x2="100%" y2="100%">
+					{#each colors as color, i (i)}
+						<stop offset="{(i / (colors.length - 1)) * 100}%" stop-color={color} />
+					{/each}
+				</linearGradient>
+			{/if}
+		{/each}
+	</defs>
+
 	<g direction="ltr" id="toothLabels">
 		{#each initialToothLabels as tooth (tooth.id)}
 			{@const isChecked = markedTeeth.has(Number(tooth.id))}
@@ -85,7 +102,15 @@
 	<g direction="ltr" id="Spots" onclick={onSpotClick} style="cursor: pointer;">
 		{#each teethData as tooth, index (tooth.key)}
 			{@const style = initToothstyle[index]}
-			{@const activeColor = markedTeeth.get(Number(tooth.key))}
+			{@const colors = markedTeeth.get(Number(tooth.key))}
+
+			<!-- Determine Fill: Single Color, Gradient, or Transparent -->
+			{@const fillValue =
+				!colors || colors.length === 0
+					? 'transparent'
+					: colors.length === 1
+						? colors[0]
+						: `url(#${getGradientId(tooth.id)})`}
 
 			{#if style.type === 'polygon'}
 				<polygon
@@ -94,7 +119,7 @@
 					id={tooth.id}
 					data-key={tooth.key}
 					fill-opacity="0.6"
-					fill={activeColor ?? 'transparent'}
+					fill={fillValue}
 					points={style.coords}
 				/>
 			{:else}
@@ -104,7 +129,7 @@
 					id={tooth.id}
 					data-key={tooth.key}
 					fill-opacity="0.6"
-					fill={activeColor ?? 'transparent'}
+					fill={fillValue}
 					d={style.coords}
 				/>
 			{/if}
@@ -112,6 +137,7 @@
 	</g>
 
 	<g direction="ltr" id="adult-outlines" class="pointer-events-none">
+		<!-- Static Outlines (Same as before) -->
 		<g id="XMLID_210_">
 			<path
 				id="XMLID_208_"
@@ -550,10 +576,16 @@
 		-webkit-transition: fill 0.25s;
 		transition: fill 0.25s;
 	}
+
+	/* hover:fill-[whitesmoke] */
 	.tooth:hover {
-		fill: whitesmoke;
-		-webkit-transition: fill 0.25s;
-		transition: fill 0.25s;
-		/* Fill color on hover */
+		fill: black;
+	}
+
+	/* Option 2: If you use system preference media queries */
+	@media (prefers-color-scheme: dark) {
+		.tooth:hover {
+			fill: white;
+		}
 	}
 </style>

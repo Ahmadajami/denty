@@ -51,9 +51,6 @@
 	}
 </script>
 
-{#if data.user}
-	<h1 class="text-7xl text-red-500">{data.user.role.name}</h1>
-{/if}
 <AddPatient
 	patientForm={data.patientForm}
 	bind:addPatientDialog={openNewPatientDialog}
