@@ -33,9 +33,9 @@ export type UserMinAggregateOutputType = {
   userAuthToken: string | null
   specialization: string | null
   systemRole: $Enums.SystemRole | null
+  status: $Enums.UserStatus | null
   createdAt: Date | null
   updatedAt: Date | null
-  status: $Enums.UserStatus | null
 }
 
 export type UserMaxAggregateOutputType = {
@@ -47,9 +47,9 @@ export type UserMaxAggregateOutputType = {
   userAuthToken: string | null
   specialization: string | null
   systemRole: $Enums.SystemRole | null
+  status: $Enums.UserStatus | null
   createdAt: Date | null
   updatedAt: Date | null
-  status: $Enums.UserStatus | null
 }
 
 export type UserCountAggregateOutputType = {
@@ -61,9 +61,9 @@ export type UserCountAggregateOutputType = {
   userAuthToken: number
   specialization: number
   systemRole: number
+  status: number
   createdAt: number
   updatedAt: number
-  status: number
   _all: number
 }
 
@@ -77,9 +77,9 @@ export type UserMinAggregateInputType = {
   userAuthToken?: true
   specialization?: true
   systemRole?: true
+  status?: true
   createdAt?: true
   updatedAt?: true
-  status?: true
 }
 
 export type UserMaxAggregateInputType = {
@@ -91,9 +91,9 @@ export type UserMaxAggregateInputType = {
   userAuthToken?: true
   specialization?: true
   systemRole?: true
+  status?: true
   createdAt?: true
   updatedAt?: true
-  status?: true
 }
 
 export type UserCountAggregateInputType = {
@@ -105,9 +105,9 @@ export type UserCountAggregateInputType = {
   userAuthToken?: true
   specialization?: true
   systemRole?: true
+  status?: true
   createdAt?: true
   updatedAt?: true
-  status?: true
   _all?: true
 }
 
@@ -190,11 +190,11 @@ export type UserGroupByOutputType = {
   phoneNumber: string
   passwordHash: string
   userAuthToken: string
-  specialization: string
+  specialization: string | null
   systemRole: $Enums.SystemRole
+  status: $Enums.UserStatus
   createdAt: Date
   updatedAt: Date
-  status: $Enums.UserStatus
   _count: UserCountAggregateOutputType | null
   _min: UserMinAggregateOutputType | null
   _max: UserMaxAggregateOutputType | null
@@ -225,16 +225,17 @@ export type UserWhereInput = {
   phoneNumber?: Prisma.StringFilter<"User"> | string
   passwordHash?: Prisma.StringFilter<"User"> | string
   userAuthToken?: Prisma.StringFilter<"User"> | string
-  specialization?: Prisma.StringFilter<"User"> | string
+  specialization?: Prisma.StringNullableFilter<"User"> | string | null
   systemRole?: Prisma.EnumSystemRoleFilter<"User"> | $Enums.SystemRole
+  status?: Prisma.EnumUserStatusFilter<"User"> | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
-  status?: Prisma.EnumUserStatusFilter<"User"> | $Enums.UserStatus
   clinicMemberships?: Prisma.ClinicMemberListRelationFilter
   centerMemberships?: Prisma.MedicalCenterMemberListRelationFilter
   createdPatients?: Prisma.PatientListRelationFilter
   accessiblePatients?: Prisma.PatientAccessListRelationFilter
   appointments?: Prisma.AppointmentListRelationFilter
+  performedTreatments?: Prisma.TreatmentSessionListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -244,16 +245,17 @@ export type UserOrderByWithRelationInput = {
   phoneNumber?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
   userAuthToken?: Prisma.SortOrder
-  specialization?: Prisma.SortOrder
+  specialization?: Prisma.SortOrderInput | Prisma.SortOrder
   systemRole?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  status?: Prisma.SortOrder
   clinicMemberships?: Prisma.ClinicMemberOrderByRelationAggregateInput
   centerMemberships?: Prisma.MedicalCenterMemberOrderByRelationAggregateInput
   createdPatients?: Prisma.PatientOrderByRelationAggregateInput
   accessiblePatients?: Prisma.PatientAccessOrderByRelationAggregateInput
   appointments?: Prisma.AppointmentOrderByRelationAggregateInput
+  performedTreatments?: Prisma.TreatmentSessionOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -266,16 +268,17 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   nameEn?: Prisma.StringFilter<"User"> | string
   nameAr?: Prisma.StringFilter<"User"> | string
   passwordHash?: Prisma.StringFilter<"User"> | string
-  specialization?: Prisma.StringFilter<"User"> | string
+  specialization?: Prisma.StringNullableFilter<"User"> | string | null
   systemRole?: Prisma.EnumSystemRoleFilter<"User"> | $Enums.SystemRole
+  status?: Prisma.EnumUserStatusFilter<"User"> | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
-  status?: Prisma.EnumUserStatusFilter<"User"> | $Enums.UserStatus
   clinicMemberships?: Prisma.ClinicMemberListRelationFilter
   centerMemberships?: Prisma.MedicalCenterMemberListRelationFilter
   createdPatients?: Prisma.PatientListRelationFilter
   accessiblePatients?: Prisma.PatientAccessListRelationFilter
   appointments?: Prisma.AppointmentListRelationFilter
+  performedTreatments?: Prisma.TreatmentSessionListRelationFilter
 }, "id" | "phoneNumber" | "userAuthToken">
 
 export type UserOrderByWithAggregationInput = {
@@ -285,11 +288,11 @@ export type UserOrderByWithAggregationInput = {
   phoneNumber?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
   userAuthToken?: Prisma.SortOrder
-  specialization?: Prisma.SortOrder
+  specialization?: Prisma.SortOrderInput | Prisma.SortOrder
   systemRole?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  status?: Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
   _max?: Prisma.UserMaxOrderByAggregateInput
   _min?: Prisma.UserMinOrderByAggregateInput
@@ -305,11 +308,11 @@ export type UserScalarWhereWithAggregatesInput = {
   phoneNumber?: Prisma.StringWithAggregatesFilter<"User"> | string
   passwordHash?: Prisma.StringWithAggregatesFilter<"User"> | string
   userAuthToken?: Prisma.StringWithAggregatesFilter<"User"> | string
-  specialization?: Prisma.StringWithAggregatesFilter<"User"> | string
+  specialization?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   systemRole?: Prisma.EnumSystemRoleWithAggregatesFilter<"User"> | $Enums.SystemRole
+  status?: Prisma.EnumUserStatusWithAggregatesFilter<"User"> | $Enums.UserStatus
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
-  status?: Prisma.EnumUserStatusWithAggregatesFilter<"User"> | $Enums.UserStatus
 }
 
 export type UserCreateInput = {
@@ -319,16 +322,17 @@ export type UserCreateInput = {
   phoneNumber: string
   passwordHash: string
   userAuthToken: string
-  specialization: string
+  specialization?: string | null
   systemRole?: $Enums.SystemRole
+  status?: $Enums.UserStatus
   createdAt?: Date | string
   updatedAt?: Date | string
-  status?: $Enums.UserStatus
   clinicMemberships?: Prisma.ClinicMemberCreateNestedManyWithoutUserInput
   centerMemberships?: Prisma.MedicalCenterMemberCreateNestedManyWithoutUserInput
   createdPatients?: Prisma.PatientCreateNestedManyWithoutCreatedByInput
   accessiblePatients?: Prisma.PatientAccessCreateNestedManyWithoutDoctorInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutDoctorInput
+  performedTreatments?: Prisma.TreatmentSessionCreateNestedManyWithoutDoctorInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -338,16 +342,17 @@ export type UserUncheckedCreateInput = {
   phoneNumber: string
   passwordHash: string
   userAuthToken: string
-  specialization: string
+  specialization?: string | null
   systemRole?: $Enums.SystemRole
+  status?: $Enums.UserStatus
   createdAt?: Date | string
   updatedAt?: Date | string
-  status?: $Enums.UserStatus
   clinicMemberships?: Prisma.ClinicMemberUncheckedCreateNestedManyWithoutUserInput
   centerMemberships?: Prisma.MedicalCenterMemberUncheckedCreateNestedManyWithoutUserInput
   createdPatients?: Prisma.PatientUncheckedCreateNestedManyWithoutCreatedByInput
   accessiblePatients?: Prisma.PatientAccessUncheckedCreateNestedManyWithoutDoctorInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutDoctorInput
+  performedTreatments?: Prisma.TreatmentSessionUncheckedCreateNestedManyWithoutDoctorInput
 }
 
 export type UserUpdateInput = {
@@ -357,16 +362,17 @@ export type UserUpdateInput = {
   phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   userAuthToken?: Prisma.StringFieldUpdateOperationsInput | string
-  specialization?: Prisma.StringFieldUpdateOperationsInput | string
+  specialization?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   systemRole?: Prisma.EnumSystemRoleFieldUpdateOperationsInput | $Enums.SystemRole
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   clinicMemberships?: Prisma.ClinicMemberUpdateManyWithoutUserNestedInput
   centerMemberships?: Prisma.MedicalCenterMemberUpdateManyWithoutUserNestedInput
   createdPatients?: Prisma.PatientUpdateManyWithoutCreatedByNestedInput
   accessiblePatients?: Prisma.PatientAccessUpdateManyWithoutDoctorNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutDoctorNestedInput
+  performedTreatments?: Prisma.TreatmentSessionUpdateManyWithoutDoctorNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -376,16 +382,17 @@ export type UserUncheckedUpdateInput = {
   phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   userAuthToken?: Prisma.StringFieldUpdateOperationsInput | string
-  specialization?: Prisma.StringFieldUpdateOperationsInput | string
+  specialization?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   systemRole?: Prisma.EnumSystemRoleFieldUpdateOperationsInput | $Enums.SystemRole
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   clinicMemberships?: Prisma.ClinicMemberUncheckedUpdateManyWithoutUserNestedInput
   centerMemberships?: Prisma.MedicalCenterMemberUncheckedUpdateManyWithoutUserNestedInput
   createdPatients?: Prisma.PatientUncheckedUpdateManyWithoutCreatedByNestedInput
   accessiblePatients?: Prisma.PatientAccessUncheckedUpdateManyWithoutDoctorNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
+  performedTreatments?: Prisma.TreatmentSessionUncheckedUpdateManyWithoutDoctorNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -395,11 +402,11 @@ export type UserCreateManyInput = {
   phoneNumber: string
   passwordHash: string
   userAuthToken: string
-  specialization: string
+  specialization?: string | null
   systemRole?: $Enums.SystemRole
+  status?: $Enums.UserStatus
   createdAt?: Date | string
   updatedAt?: Date | string
-  status?: $Enums.UserStatus
 }
 
 export type UserUpdateManyMutationInput = {
@@ -409,11 +416,11 @@ export type UserUpdateManyMutationInput = {
   phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   userAuthToken?: Prisma.StringFieldUpdateOperationsInput | string
-  specialization?: Prisma.StringFieldUpdateOperationsInput | string
+  specialization?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   systemRole?: Prisma.EnumSystemRoleFieldUpdateOperationsInput | $Enums.SystemRole
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
 }
 
 export type UserUncheckedUpdateManyInput = {
@@ -423,11 +430,11 @@ export type UserUncheckedUpdateManyInput = {
   phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   userAuthToken?: Prisma.StringFieldUpdateOperationsInput | string
-  specialization?: Prisma.StringFieldUpdateOperationsInput | string
+  specialization?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   systemRole?: Prisma.EnumSystemRoleFieldUpdateOperationsInput | $Enums.SystemRole
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
 }
 
 export type UserCountOrderByAggregateInput = {
@@ -439,9 +446,9 @@ export type UserCountOrderByAggregateInput = {
   userAuthToken?: Prisma.SortOrder
   specialization?: Prisma.SortOrder
   systemRole?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  status?: Prisma.SortOrder
 }
 
 export type UserMaxOrderByAggregateInput = {
@@ -453,9 +460,9 @@ export type UserMaxOrderByAggregateInput = {
   userAuthToken?: Prisma.SortOrder
   specialization?: Prisma.SortOrder
   systemRole?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  status?: Prisma.SortOrder
 }
 
 export type UserMinOrderByAggregateInput = {
@@ -467,9 +474,9 @@ export type UserMinOrderByAggregateInput = {
   userAuthToken?: Prisma.SortOrder
   specialization?: Prisma.SortOrder
   systemRole?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  status?: Prisma.SortOrder
 }
 
 export type UserScalarRelationFilter = {
@@ -481,16 +488,20 @@ export type StringFieldUpdateOperationsInput = {
   set?: string
 }
 
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
+}
+
 export type EnumSystemRoleFieldUpdateOperationsInput = {
   set?: $Enums.SystemRole
 }
 
-export type DateTimeFieldUpdateOperationsInput = {
-  set?: Date | string
-}
-
 export type EnumUserStatusFieldUpdateOperationsInput = {
   set?: $Enums.UserStatus
+}
+
+export type DateTimeFieldUpdateOperationsInput = {
+  set?: Date | string
 }
 
 export type UserCreateNestedOneWithoutClinicMembershipsInput = {
@@ -563,6 +574,20 @@ export type UserUpdateOneRequiredWithoutAppointmentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAppointmentsInput, Prisma.UserUpdateWithoutAppointmentsInput>, Prisma.UserUncheckedUpdateWithoutAppointmentsInput>
 }
 
+export type UserCreateNestedOneWithoutPerformedTreatmentsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPerformedTreatmentsInput, Prisma.UserUncheckedCreateWithoutPerformedTreatmentsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPerformedTreatmentsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutPerformedTreatmentsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPerformedTreatmentsInput, Prisma.UserUncheckedCreateWithoutPerformedTreatmentsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPerformedTreatmentsInput
+  upsert?: Prisma.UserUpsertWithoutPerformedTreatmentsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutPerformedTreatmentsInput, Prisma.UserUpdateWithoutPerformedTreatmentsInput>, Prisma.UserUncheckedUpdateWithoutPerformedTreatmentsInput>
+}
+
 export type UserCreateWithoutClinicMembershipsInput = {
   id?: string
   nameEn: string
@@ -570,15 +595,16 @@ export type UserCreateWithoutClinicMembershipsInput = {
   phoneNumber: string
   passwordHash: string
   userAuthToken: string
-  specialization: string
+  specialization?: string | null
   systemRole?: $Enums.SystemRole
+  status?: $Enums.UserStatus
   createdAt?: Date | string
   updatedAt?: Date | string
-  status?: $Enums.UserStatus
   centerMemberships?: Prisma.MedicalCenterMemberCreateNestedManyWithoutUserInput
   createdPatients?: Prisma.PatientCreateNestedManyWithoutCreatedByInput
   accessiblePatients?: Prisma.PatientAccessCreateNestedManyWithoutDoctorInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutDoctorInput
+  performedTreatments?: Prisma.TreatmentSessionCreateNestedManyWithoutDoctorInput
 }
 
 export type UserUncheckedCreateWithoutClinicMembershipsInput = {
@@ -588,15 +614,16 @@ export type UserUncheckedCreateWithoutClinicMembershipsInput = {
   phoneNumber: string
   passwordHash: string
   userAuthToken: string
-  specialization: string
+  specialization?: string | null
   systemRole?: $Enums.SystemRole
+  status?: $Enums.UserStatus
   createdAt?: Date | string
   updatedAt?: Date | string
-  status?: $Enums.UserStatus
   centerMemberships?: Prisma.MedicalCenterMemberUncheckedCreateNestedManyWithoutUserInput
   createdPatients?: Prisma.PatientUncheckedCreateNestedManyWithoutCreatedByInput
   accessiblePatients?: Prisma.PatientAccessUncheckedCreateNestedManyWithoutDoctorInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutDoctorInput
+  performedTreatments?: Prisma.TreatmentSessionUncheckedCreateNestedManyWithoutDoctorInput
 }
 
 export type UserCreateOrConnectWithoutClinicMembershipsInput = {
@@ -622,15 +649,16 @@ export type UserUpdateWithoutClinicMembershipsInput = {
   phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   userAuthToken?: Prisma.StringFieldUpdateOperationsInput | string
-  specialization?: Prisma.StringFieldUpdateOperationsInput | string
+  specialization?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   systemRole?: Prisma.EnumSystemRoleFieldUpdateOperationsInput | $Enums.SystemRole
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   centerMemberships?: Prisma.MedicalCenterMemberUpdateManyWithoutUserNestedInput
   createdPatients?: Prisma.PatientUpdateManyWithoutCreatedByNestedInput
   accessiblePatients?: Prisma.PatientAccessUpdateManyWithoutDoctorNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutDoctorNestedInput
+  performedTreatments?: Prisma.TreatmentSessionUpdateManyWithoutDoctorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutClinicMembershipsInput = {
@@ -640,15 +668,16 @@ export type UserUncheckedUpdateWithoutClinicMembershipsInput = {
   phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   userAuthToken?: Prisma.StringFieldUpdateOperationsInput | string
-  specialization?: Prisma.StringFieldUpdateOperationsInput | string
+  specialization?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   systemRole?: Prisma.EnumSystemRoleFieldUpdateOperationsInput | $Enums.SystemRole
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   centerMemberships?: Prisma.MedicalCenterMemberUncheckedUpdateManyWithoutUserNestedInput
   createdPatients?: Prisma.PatientUncheckedUpdateManyWithoutCreatedByNestedInput
   accessiblePatients?: Prisma.PatientAccessUncheckedUpdateManyWithoutDoctorNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
+  performedTreatments?: Prisma.TreatmentSessionUncheckedUpdateManyWithoutDoctorNestedInput
 }
 
 export type UserCreateWithoutCenterMembershipsInput = {
@@ -658,15 +687,16 @@ export type UserCreateWithoutCenterMembershipsInput = {
   phoneNumber: string
   passwordHash: string
   userAuthToken: string
-  specialization: string
+  specialization?: string | null
   systemRole?: $Enums.SystemRole
+  status?: $Enums.UserStatus
   createdAt?: Date | string
   updatedAt?: Date | string
-  status?: $Enums.UserStatus
   clinicMemberships?: Prisma.ClinicMemberCreateNestedManyWithoutUserInput
   createdPatients?: Prisma.PatientCreateNestedManyWithoutCreatedByInput
   accessiblePatients?: Prisma.PatientAccessCreateNestedManyWithoutDoctorInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutDoctorInput
+  performedTreatments?: Prisma.TreatmentSessionCreateNestedManyWithoutDoctorInput
 }
 
 export type UserUncheckedCreateWithoutCenterMembershipsInput = {
@@ -676,15 +706,16 @@ export type UserUncheckedCreateWithoutCenterMembershipsInput = {
   phoneNumber: string
   passwordHash: string
   userAuthToken: string
-  specialization: string
+  specialization?: string | null
   systemRole?: $Enums.SystemRole
+  status?: $Enums.UserStatus
   createdAt?: Date | string
   updatedAt?: Date | string
-  status?: $Enums.UserStatus
   clinicMemberships?: Prisma.ClinicMemberUncheckedCreateNestedManyWithoutUserInput
   createdPatients?: Prisma.PatientUncheckedCreateNestedManyWithoutCreatedByInput
   accessiblePatients?: Prisma.PatientAccessUncheckedCreateNestedManyWithoutDoctorInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutDoctorInput
+  performedTreatments?: Prisma.TreatmentSessionUncheckedCreateNestedManyWithoutDoctorInput
 }
 
 export type UserCreateOrConnectWithoutCenterMembershipsInput = {
@@ -710,15 +741,16 @@ export type UserUpdateWithoutCenterMembershipsInput = {
   phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   userAuthToken?: Prisma.StringFieldUpdateOperationsInput | string
-  specialization?: Prisma.StringFieldUpdateOperationsInput | string
+  specialization?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   systemRole?: Prisma.EnumSystemRoleFieldUpdateOperationsInput | $Enums.SystemRole
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   clinicMemberships?: Prisma.ClinicMemberUpdateManyWithoutUserNestedInput
   createdPatients?: Prisma.PatientUpdateManyWithoutCreatedByNestedInput
   accessiblePatients?: Prisma.PatientAccessUpdateManyWithoutDoctorNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutDoctorNestedInput
+  performedTreatments?: Prisma.TreatmentSessionUpdateManyWithoutDoctorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCenterMembershipsInput = {
@@ -728,15 +760,16 @@ export type UserUncheckedUpdateWithoutCenterMembershipsInput = {
   phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   userAuthToken?: Prisma.StringFieldUpdateOperationsInput | string
-  specialization?: Prisma.StringFieldUpdateOperationsInput | string
+  specialization?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   systemRole?: Prisma.EnumSystemRoleFieldUpdateOperationsInput | $Enums.SystemRole
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   clinicMemberships?: Prisma.ClinicMemberUncheckedUpdateManyWithoutUserNestedInput
   createdPatients?: Prisma.PatientUncheckedUpdateManyWithoutCreatedByNestedInput
   accessiblePatients?: Prisma.PatientAccessUncheckedUpdateManyWithoutDoctorNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
+  performedTreatments?: Prisma.TreatmentSessionUncheckedUpdateManyWithoutDoctorNestedInput
 }
 
 export type UserCreateWithoutCreatedPatientsInput = {
@@ -746,15 +779,16 @@ export type UserCreateWithoutCreatedPatientsInput = {
   phoneNumber: string
   passwordHash: string
   userAuthToken: string
-  specialization: string
+  specialization?: string | null
   systemRole?: $Enums.SystemRole
+  status?: $Enums.UserStatus
   createdAt?: Date | string
   updatedAt?: Date | string
-  status?: $Enums.UserStatus
   clinicMemberships?: Prisma.ClinicMemberCreateNestedManyWithoutUserInput
   centerMemberships?: Prisma.MedicalCenterMemberCreateNestedManyWithoutUserInput
   accessiblePatients?: Prisma.PatientAccessCreateNestedManyWithoutDoctorInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutDoctorInput
+  performedTreatments?: Prisma.TreatmentSessionCreateNestedManyWithoutDoctorInput
 }
 
 export type UserUncheckedCreateWithoutCreatedPatientsInput = {
@@ -764,15 +798,16 @@ export type UserUncheckedCreateWithoutCreatedPatientsInput = {
   phoneNumber: string
   passwordHash: string
   userAuthToken: string
-  specialization: string
+  specialization?: string | null
   systemRole?: $Enums.SystemRole
+  status?: $Enums.UserStatus
   createdAt?: Date | string
   updatedAt?: Date | string
-  status?: $Enums.UserStatus
   clinicMemberships?: Prisma.ClinicMemberUncheckedCreateNestedManyWithoutUserInput
   centerMemberships?: Prisma.MedicalCenterMemberUncheckedCreateNestedManyWithoutUserInput
   accessiblePatients?: Prisma.PatientAccessUncheckedCreateNestedManyWithoutDoctorInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutDoctorInput
+  performedTreatments?: Prisma.TreatmentSessionUncheckedCreateNestedManyWithoutDoctorInput
 }
 
 export type UserCreateOrConnectWithoutCreatedPatientsInput = {
@@ -798,15 +833,16 @@ export type UserUpdateWithoutCreatedPatientsInput = {
   phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   userAuthToken?: Prisma.StringFieldUpdateOperationsInput | string
-  specialization?: Prisma.StringFieldUpdateOperationsInput | string
+  specialization?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   systemRole?: Prisma.EnumSystemRoleFieldUpdateOperationsInput | $Enums.SystemRole
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   clinicMemberships?: Prisma.ClinicMemberUpdateManyWithoutUserNestedInput
   centerMemberships?: Prisma.MedicalCenterMemberUpdateManyWithoutUserNestedInput
   accessiblePatients?: Prisma.PatientAccessUpdateManyWithoutDoctorNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutDoctorNestedInput
+  performedTreatments?: Prisma.TreatmentSessionUpdateManyWithoutDoctorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCreatedPatientsInput = {
@@ -816,15 +852,16 @@ export type UserUncheckedUpdateWithoutCreatedPatientsInput = {
   phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   userAuthToken?: Prisma.StringFieldUpdateOperationsInput | string
-  specialization?: Prisma.StringFieldUpdateOperationsInput | string
+  specialization?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   systemRole?: Prisma.EnumSystemRoleFieldUpdateOperationsInput | $Enums.SystemRole
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   clinicMemberships?: Prisma.ClinicMemberUncheckedUpdateManyWithoutUserNestedInput
   centerMemberships?: Prisma.MedicalCenterMemberUncheckedUpdateManyWithoutUserNestedInput
   accessiblePatients?: Prisma.PatientAccessUncheckedUpdateManyWithoutDoctorNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
+  performedTreatments?: Prisma.TreatmentSessionUncheckedUpdateManyWithoutDoctorNestedInput
 }
 
 export type UserCreateWithoutAccessiblePatientsInput = {
@@ -834,15 +871,16 @@ export type UserCreateWithoutAccessiblePatientsInput = {
   phoneNumber: string
   passwordHash: string
   userAuthToken: string
-  specialization: string
+  specialization?: string | null
   systemRole?: $Enums.SystemRole
+  status?: $Enums.UserStatus
   createdAt?: Date | string
   updatedAt?: Date | string
-  status?: $Enums.UserStatus
   clinicMemberships?: Prisma.ClinicMemberCreateNestedManyWithoutUserInput
   centerMemberships?: Prisma.MedicalCenterMemberCreateNestedManyWithoutUserInput
   createdPatients?: Prisma.PatientCreateNestedManyWithoutCreatedByInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutDoctorInput
+  performedTreatments?: Prisma.TreatmentSessionCreateNestedManyWithoutDoctorInput
 }
 
 export type UserUncheckedCreateWithoutAccessiblePatientsInput = {
@@ -852,15 +890,16 @@ export type UserUncheckedCreateWithoutAccessiblePatientsInput = {
   phoneNumber: string
   passwordHash: string
   userAuthToken: string
-  specialization: string
+  specialization?: string | null
   systemRole?: $Enums.SystemRole
+  status?: $Enums.UserStatus
   createdAt?: Date | string
   updatedAt?: Date | string
-  status?: $Enums.UserStatus
   clinicMemberships?: Prisma.ClinicMemberUncheckedCreateNestedManyWithoutUserInput
   centerMemberships?: Prisma.MedicalCenterMemberUncheckedCreateNestedManyWithoutUserInput
   createdPatients?: Prisma.PatientUncheckedCreateNestedManyWithoutCreatedByInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutDoctorInput
+  performedTreatments?: Prisma.TreatmentSessionUncheckedCreateNestedManyWithoutDoctorInput
 }
 
 export type UserCreateOrConnectWithoutAccessiblePatientsInput = {
@@ -886,15 +925,16 @@ export type UserUpdateWithoutAccessiblePatientsInput = {
   phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   userAuthToken?: Prisma.StringFieldUpdateOperationsInput | string
-  specialization?: Prisma.StringFieldUpdateOperationsInput | string
+  specialization?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   systemRole?: Prisma.EnumSystemRoleFieldUpdateOperationsInput | $Enums.SystemRole
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   clinicMemberships?: Prisma.ClinicMemberUpdateManyWithoutUserNestedInput
   centerMemberships?: Prisma.MedicalCenterMemberUpdateManyWithoutUserNestedInput
   createdPatients?: Prisma.PatientUpdateManyWithoutCreatedByNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutDoctorNestedInput
+  performedTreatments?: Prisma.TreatmentSessionUpdateManyWithoutDoctorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccessiblePatientsInput = {
@@ -904,15 +944,16 @@ export type UserUncheckedUpdateWithoutAccessiblePatientsInput = {
   phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   userAuthToken?: Prisma.StringFieldUpdateOperationsInput | string
-  specialization?: Prisma.StringFieldUpdateOperationsInput | string
+  specialization?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   systemRole?: Prisma.EnumSystemRoleFieldUpdateOperationsInput | $Enums.SystemRole
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   clinicMemberships?: Prisma.ClinicMemberUncheckedUpdateManyWithoutUserNestedInput
   centerMemberships?: Prisma.MedicalCenterMemberUncheckedUpdateManyWithoutUserNestedInput
   createdPatients?: Prisma.PatientUncheckedUpdateManyWithoutCreatedByNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
+  performedTreatments?: Prisma.TreatmentSessionUncheckedUpdateManyWithoutDoctorNestedInput
 }
 
 export type UserCreateWithoutAppointmentsInput = {
@@ -922,15 +963,16 @@ export type UserCreateWithoutAppointmentsInput = {
   phoneNumber: string
   passwordHash: string
   userAuthToken: string
-  specialization: string
+  specialization?: string | null
   systemRole?: $Enums.SystemRole
+  status?: $Enums.UserStatus
   createdAt?: Date | string
   updatedAt?: Date | string
-  status?: $Enums.UserStatus
   clinicMemberships?: Prisma.ClinicMemberCreateNestedManyWithoutUserInput
   centerMemberships?: Prisma.MedicalCenterMemberCreateNestedManyWithoutUserInput
   createdPatients?: Prisma.PatientCreateNestedManyWithoutCreatedByInput
   accessiblePatients?: Prisma.PatientAccessCreateNestedManyWithoutDoctorInput
+  performedTreatments?: Prisma.TreatmentSessionCreateNestedManyWithoutDoctorInput
 }
 
 export type UserUncheckedCreateWithoutAppointmentsInput = {
@@ -940,15 +982,16 @@ export type UserUncheckedCreateWithoutAppointmentsInput = {
   phoneNumber: string
   passwordHash: string
   userAuthToken: string
-  specialization: string
+  specialization?: string | null
   systemRole?: $Enums.SystemRole
+  status?: $Enums.UserStatus
   createdAt?: Date | string
   updatedAt?: Date | string
-  status?: $Enums.UserStatus
   clinicMemberships?: Prisma.ClinicMemberUncheckedCreateNestedManyWithoutUserInput
   centerMemberships?: Prisma.MedicalCenterMemberUncheckedCreateNestedManyWithoutUserInput
   createdPatients?: Prisma.PatientUncheckedCreateNestedManyWithoutCreatedByInput
   accessiblePatients?: Prisma.PatientAccessUncheckedCreateNestedManyWithoutDoctorInput
+  performedTreatments?: Prisma.TreatmentSessionUncheckedCreateNestedManyWithoutDoctorInput
 }
 
 export type UserCreateOrConnectWithoutAppointmentsInput = {
@@ -974,15 +1017,16 @@ export type UserUpdateWithoutAppointmentsInput = {
   phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   userAuthToken?: Prisma.StringFieldUpdateOperationsInput | string
-  specialization?: Prisma.StringFieldUpdateOperationsInput | string
+  specialization?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   systemRole?: Prisma.EnumSystemRoleFieldUpdateOperationsInput | $Enums.SystemRole
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   clinicMemberships?: Prisma.ClinicMemberUpdateManyWithoutUserNestedInput
   centerMemberships?: Prisma.MedicalCenterMemberUpdateManyWithoutUserNestedInput
   createdPatients?: Prisma.PatientUpdateManyWithoutCreatedByNestedInput
   accessiblePatients?: Prisma.PatientAccessUpdateManyWithoutDoctorNestedInput
+  performedTreatments?: Prisma.TreatmentSessionUpdateManyWithoutDoctorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAppointmentsInput = {
@@ -992,15 +1036,108 @@ export type UserUncheckedUpdateWithoutAppointmentsInput = {
   phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   userAuthToken?: Prisma.StringFieldUpdateOperationsInput | string
-  specialization?: Prisma.StringFieldUpdateOperationsInput | string
+  specialization?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   systemRole?: Prisma.EnumSystemRoleFieldUpdateOperationsInput | $Enums.SystemRole
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   clinicMemberships?: Prisma.ClinicMemberUncheckedUpdateManyWithoutUserNestedInput
   centerMemberships?: Prisma.MedicalCenterMemberUncheckedUpdateManyWithoutUserNestedInput
   createdPatients?: Prisma.PatientUncheckedUpdateManyWithoutCreatedByNestedInput
   accessiblePatients?: Prisma.PatientAccessUncheckedUpdateManyWithoutDoctorNestedInput
+  performedTreatments?: Prisma.TreatmentSessionUncheckedUpdateManyWithoutDoctorNestedInput
+}
+
+export type UserCreateWithoutPerformedTreatmentsInput = {
+  id?: string
+  nameEn: string
+  nameAr: string
+  phoneNumber: string
+  passwordHash: string
+  userAuthToken: string
+  specialization?: string | null
+  systemRole?: $Enums.SystemRole
+  status?: $Enums.UserStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  clinicMemberships?: Prisma.ClinicMemberCreateNestedManyWithoutUserInput
+  centerMemberships?: Prisma.MedicalCenterMemberCreateNestedManyWithoutUserInput
+  createdPatients?: Prisma.PatientCreateNestedManyWithoutCreatedByInput
+  accessiblePatients?: Prisma.PatientAccessCreateNestedManyWithoutDoctorInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutDoctorInput
+}
+
+export type UserUncheckedCreateWithoutPerformedTreatmentsInput = {
+  id?: string
+  nameEn: string
+  nameAr: string
+  phoneNumber: string
+  passwordHash: string
+  userAuthToken: string
+  specialization?: string | null
+  systemRole?: $Enums.SystemRole
+  status?: $Enums.UserStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  clinicMemberships?: Prisma.ClinicMemberUncheckedCreateNestedManyWithoutUserInput
+  centerMemberships?: Prisma.MedicalCenterMemberUncheckedCreateNestedManyWithoutUserInput
+  createdPatients?: Prisma.PatientUncheckedCreateNestedManyWithoutCreatedByInput
+  accessiblePatients?: Prisma.PatientAccessUncheckedCreateNestedManyWithoutDoctorInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutDoctorInput
+}
+
+export type UserCreateOrConnectWithoutPerformedTreatmentsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutPerformedTreatmentsInput, Prisma.UserUncheckedCreateWithoutPerformedTreatmentsInput>
+}
+
+export type UserUpsertWithoutPerformedTreatmentsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutPerformedTreatmentsInput, Prisma.UserUncheckedUpdateWithoutPerformedTreatmentsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutPerformedTreatmentsInput, Prisma.UserUncheckedCreateWithoutPerformedTreatmentsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutPerformedTreatmentsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutPerformedTreatmentsInput, Prisma.UserUncheckedUpdateWithoutPerformedTreatmentsInput>
+}
+
+export type UserUpdateWithoutPerformedTreatmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nameEn?: Prisma.StringFieldUpdateOperationsInput | string
+  nameAr?: Prisma.StringFieldUpdateOperationsInput | string
+  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  userAuthToken?: Prisma.StringFieldUpdateOperationsInput | string
+  specialization?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  systemRole?: Prisma.EnumSystemRoleFieldUpdateOperationsInput | $Enums.SystemRole
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  clinicMemberships?: Prisma.ClinicMemberUpdateManyWithoutUserNestedInput
+  centerMemberships?: Prisma.MedicalCenterMemberUpdateManyWithoutUserNestedInput
+  createdPatients?: Prisma.PatientUpdateManyWithoutCreatedByNestedInput
+  accessiblePatients?: Prisma.PatientAccessUpdateManyWithoutDoctorNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutDoctorNestedInput
+}
+
+export type UserUncheckedUpdateWithoutPerformedTreatmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nameEn?: Prisma.StringFieldUpdateOperationsInput | string
+  nameAr?: Prisma.StringFieldUpdateOperationsInput | string
+  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  userAuthToken?: Prisma.StringFieldUpdateOperationsInput | string
+  specialization?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  systemRole?: Prisma.EnumSystemRoleFieldUpdateOperationsInput | $Enums.SystemRole
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  clinicMemberships?: Prisma.ClinicMemberUncheckedUpdateManyWithoutUserNestedInput
+  centerMemberships?: Prisma.MedicalCenterMemberUncheckedUpdateManyWithoutUserNestedInput
+  createdPatients?: Prisma.PatientUncheckedUpdateManyWithoutCreatedByNestedInput
+  accessiblePatients?: Prisma.PatientAccessUncheckedUpdateManyWithoutDoctorNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
 }
 
 
@@ -1014,6 +1151,7 @@ export type UserCountOutputType = {
   createdPatients: number
   accessiblePatients: number
   appointments: number
+  performedTreatments: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1022,6 +1160,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   createdPatients?: boolean | UserCountOutputTypeCountCreatedPatientsArgs
   accessiblePatients?: boolean | UserCountOutputTypeCountAccessiblePatientsArgs
   appointments?: boolean | UserCountOutputTypeCountAppointmentsArgs
+  performedTreatments?: boolean | UserCountOutputTypeCountPerformedTreatmentsArgs
 }
 
 /**
@@ -1069,6 +1208,13 @@ export type UserCountOutputTypeCountAppointmentsArgs<ExtArgs extends runtime.Typ
   where?: Prisma.AppointmentWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountPerformedTreatmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.TreatmentSessionWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1079,14 +1225,15 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   userAuthToken?: boolean
   specialization?: boolean
   systemRole?: boolean
+  status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  status?: boolean
   clinicMemberships?: boolean | Prisma.User$clinicMembershipsArgs<ExtArgs>
   centerMemberships?: boolean | Prisma.User$centerMembershipsArgs<ExtArgs>
   createdPatients?: boolean | Prisma.User$createdPatientsArgs<ExtArgs>
   accessiblePatients?: boolean | Prisma.User$accessiblePatientsArgs<ExtArgs>
   appointments?: boolean | Prisma.User$appointmentsArgs<ExtArgs>
+  performedTreatments?: boolean | Prisma.User$performedTreatmentsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1099,9 +1246,9 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   userAuthToken?: boolean
   specialization?: boolean
   systemRole?: boolean
+  status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  status?: boolean
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1113,9 +1260,9 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   userAuthToken?: boolean
   specialization?: boolean
   systemRole?: boolean
+  status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  status?: boolean
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectScalar = {
@@ -1127,18 +1274,19 @@ export type UserSelectScalar = {
   userAuthToken?: boolean
   specialization?: boolean
   systemRole?: boolean
+  status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  status?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nameEn" | "nameAr" | "phoneNumber" | "passwordHash" | "userAuthToken" | "specialization" | "systemRole" | "createdAt" | "updatedAt" | "status", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nameEn" | "nameAr" | "phoneNumber" | "passwordHash" | "userAuthToken" | "specialization" | "systemRole" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   clinicMemberships?: boolean | Prisma.User$clinicMembershipsArgs<ExtArgs>
   centerMemberships?: boolean | Prisma.User$centerMembershipsArgs<ExtArgs>
   createdPatients?: boolean | Prisma.User$createdPatientsArgs<ExtArgs>
   accessiblePatients?: boolean | Prisma.User$accessiblePatientsArgs<ExtArgs>
   appointments?: boolean | Prisma.User$appointmentsArgs<ExtArgs>
+  performedTreatments?: boolean | Prisma.User$performedTreatmentsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1152,6 +1300,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     createdPatients: Prisma.$PatientPayload<ExtArgs>[]
     accessiblePatients: Prisma.$PatientAccessPayload<ExtArgs>[]
     appointments: Prisma.$AppointmentPayload<ExtArgs>[]
+    performedTreatments: Prisma.$TreatmentSessionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1160,11 +1309,11 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     phoneNumber: string
     passwordHash: string
     userAuthToken: string
-    specialization: string
+    specialization: string | null
     systemRole: $Enums.SystemRole
+    status: $Enums.UserStatus
     createdAt: Date
     updatedAt: Date
-    status: $Enums.UserStatus
   }, ExtArgs["result"]["user"]>
   composites: {}
 }
@@ -1564,6 +1713,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   createdPatients<T extends Prisma.User$createdPatientsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$createdPatientsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PatientPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   accessiblePatients<T extends Prisma.User$accessiblePatientsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$accessiblePatientsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PatientAccessPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   appointments<T extends Prisma.User$appointmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$appointmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AppointmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  performedTreatments<T extends Prisma.User$performedTreatmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$performedTreatmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TreatmentSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1601,9 +1751,9 @@ export interface UserFieldRefs {
   readonly userAuthToken: Prisma.FieldRef<"User", 'String'>
   readonly specialization: Prisma.FieldRef<"User", 'String'>
   readonly systemRole: Prisma.FieldRef<"User", 'SystemRole'>
+  readonly status: Prisma.FieldRef<"User", 'UserStatus'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>
-  readonly status: Prisma.FieldRef<"User", 'UserStatus'>
 }
     
 
@@ -2109,6 +2259,30 @@ export type User$appointmentsArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.AppointmentScalarFieldEnum | Prisma.AppointmentScalarFieldEnum[]
+}
+
+/**
+ * User.performedTreatments
+ */
+export type User$performedTreatmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the TreatmentSession
+   */
+  select?: Prisma.TreatmentSessionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the TreatmentSession
+   */
+  omit?: Prisma.TreatmentSessionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TreatmentSessionInclude<ExtArgs> | null
+  where?: Prisma.TreatmentSessionWhereInput
+  orderBy?: Prisma.TreatmentSessionOrderByWithRelationInput | Prisma.TreatmentSessionOrderByWithRelationInput[]
+  cursor?: Prisma.TreatmentSessionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.TreatmentSessionScalarFieldEnum | Prisma.TreatmentSessionScalarFieldEnum[]
 }
 
 /**

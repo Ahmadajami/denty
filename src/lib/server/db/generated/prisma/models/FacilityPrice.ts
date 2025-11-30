@@ -276,8 +276,8 @@ export type FacilityPriceCreateInput = {
   id?: string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   treatment: Prisma.TreatmentCreateNestedOneWithoutFacilityPricesInput
-  clinic?: Prisma.ClinicCreateNestedOneWithoutPricesInput
-  medicalCenter?: Prisma.MedicalCenterCreateNestedOneWithoutPricesInput
+  clinic?: Prisma.ClinicCreateNestedOneWithoutFacilityPricesInput
+  medicalCenter?: Prisma.MedicalCenterCreateNestedOneWithoutFacilityPricesInput
 }
 
 export type FacilityPriceUncheckedCreateInput = {
@@ -292,8 +292,8 @@ export type FacilityPriceUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   treatment?: Prisma.TreatmentUpdateOneRequiredWithoutFacilityPricesNestedInput
-  clinic?: Prisma.ClinicUpdateOneWithoutPricesNestedInput
-  medicalCenter?: Prisma.MedicalCenterUpdateOneWithoutPricesNestedInput
+  clinic?: Prisma.ClinicUpdateOneWithoutFacilityPricesNestedInput
+  medicalCenter?: Prisma.MedicalCenterUpdateOneWithoutFacilityPricesNestedInput
 }
 
 export type FacilityPriceUncheckedUpdateInput = {
@@ -503,19 +503,11 @@ export type FacilityPriceUncheckedUpdateManyWithoutTreatmentNestedInput = {
   deleteMany?: Prisma.FacilityPriceScalarWhereInput | Prisma.FacilityPriceScalarWhereInput[]
 }
 
-export type DecimalFieldUpdateOperationsInput = {
-  set?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  increment?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
-}
-
 export type FacilityPriceCreateWithoutClinicInput = {
   id?: string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   treatment: Prisma.TreatmentCreateNestedOneWithoutFacilityPricesInput
-  medicalCenter?: Prisma.MedicalCenterCreateNestedOneWithoutPricesInput
+  medicalCenter?: Prisma.MedicalCenterCreateNestedOneWithoutFacilityPricesInput
 }
 
 export type FacilityPriceUncheckedCreateWithoutClinicInput = {
@@ -566,7 +558,7 @@ export type FacilityPriceCreateWithoutMedicalCenterInput = {
   id?: string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   treatment: Prisma.TreatmentCreateNestedOneWithoutFacilityPricesInput
-  clinic?: Prisma.ClinicCreateNestedOneWithoutPricesInput
+  clinic?: Prisma.ClinicCreateNestedOneWithoutFacilityPricesInput
 }
 
 export type FacilityPriceUncheckedCreateWithoutMedicalCenterInput = {
@@ -605,8 +597,8 @@ export type FacilityPriceUpdateManyWithWhereWithoutMedicalCenterInput = {
 export type FacilityPriceCreateWithoutTreatmentInput = {
   id?: string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
-  clinic?: Prisma.ClinicCreateNestedOneWithoutPricesInput
-  medicalCenter?: Prisma.MedicalCenterCreateNestedOneWithoutPricesInput
+  clinic?: Prisma.ClinicCreateNestedOneWithoutFacilityPricesInput
+  medicalCenter?: Prisma.MedicalCenterCreateNestedOneWithoutFacilityPricesInput
 }
 
 export type FacilityPriceUncheckedCreateWithoutTreatmentInput = {
@@ -653,7 +645,7 @@ export type FacilityPriceUpdateWithoutClinicInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   treatment?: Prisma.TreatmentUpdateOneRequiredWithoutFacilityPricesNestedInput
-  medicalCenter?: Prisma.MedicalCenterUpdateOneWithoutPricesNestedInput
+  medicalCenter?: Prisma.MedicalCenterUpdateOneWithoutFacilityPricesNestedInput
 }
 
 export type FacilityPriceUncheckedUpdateWithoutClinicInput = {
@@ -681,7 +673,7 @@ export type FacilityPriceUpdateWithoutMedicalCenterInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   treatment?: Prisma.TreatmentUpdateOneRequiredWithoutFacilityPricesNestedInput
-  clinic?: Prisma.ClinicUpdateOneWithoutPricesNestedInput
+  clinic?: Prisma.ClinicUpdateOneWithoutFacilityPricesNestedInput
 }
 
 export type FacilityPriceUncheckedUpdateWithoutMedicalCenterInput = {
@@ -708,8 +700,8 @@ export type FacilityPriceCreateManyTreatmentInput = {
 export type FacilityPriceUpdateWithoutTreatmentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  clinic?: Prisma.ClinicUpdateOneWithoutPricesNestedInput
-  medicalCenter?: Prisma.MedicalCenterUpdateOneWithoutPricesNestedInput
+  clinic?: Prisma.ClinicUpdateOneWithoutFacilityPricesNestedInput
+  medicalCenter?: Prisma.MedicalCenterUpdateOneWithoutFacilityPricesNestedInput
 }
 
 export type FacilityPriceUncheckedUpdateWithoutTreatmentInput = {

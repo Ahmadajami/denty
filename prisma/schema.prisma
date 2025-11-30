@@ -6,7 +6,6 @@ generator client {
   provider = "prisma-client"
   output   = "../src/lib/server/db/generated/prisma"
 }
-
 /* =========================================================
    1. USER & SYSTEM ACCESS
    ========================================================= */
@@ -14,35 +13,37 @@ generator client {
 model User {
   id              String   @id @default(cuid())
 
-  // Personal Details (Bilingual)
+  // Personal Details
   nameEn          String
   nameAr          String
   phoneNumber     String   @unique
   passwordHash    String
-  userAuthToken   String   @unique
+  userAuthToken   String   @unique // Session token
   
-  specialization  String  // e.g., "Orthodontist", "General Practitioner"
+  specialization  String?  // Nullable because Admins/Owners might not be doctors
 
-  // SYSTEM ROLE: Defines if this is You (SaaS Admin) or a Client (Doctor)
+  // Role Management
   systemRole      SystemRole @default(CUSTOMER)
+  status          UserStatus @default(ACTIVE)
 
-  // MEMBERSHIPS: Where does this user work?
+  // MEMBERSHIPS (Where they work)
   clinicMemberships    ClinicMember[]
   centerMemberships    MedicalCenterMember[]
 
-  // PATIENT ACCESS:
-  // 1. Audit: Who originally created the patient profile?
+  // ACCESS & AUDIT
   createdPatients      Patient[]       @relation("PatientCreator")
-  // 2. Visiting Access: Specific patients a Visiting Doctor is allowed to see
-  accessiblePatients   PatientAccess[]
-  
-  // OPERATIONS:
-  appointments         Appointment[]   @relation("DoctorAppointments")
-  // REMOVED: MedicalRecords relation
+  accessiblePatients   PatientAccess[] // For Visiting Doctors
+
+  // OPERATIONS (Doctor Specific)
+  appointments         Appointment[]      @relation("DoctorAppointments")
+  performedTreatments  TreatmentSession[] @relation("PerformedTreatments")
 
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
-  status          UserStatus @default(ACTIVE)
+
+  // Performance Indexes
+  @@index([systemRole])
+  @@index([status])
 }
 
 /* =========================================================
@@ -50,51 +51,53 @@ model User {
    ========================================================= */
 
 model Clinic {
-  id            String   @id @default(cuid())
-  name          String   @unique
+  id                 String   @id @default(cuid())
+  name               String   @unique
 
-  // SUBSCRIPTION & STATUS
-  status             SubscriptionStatus @default(PENDING) // Needs Admin Approval
-  subscriptionEndsAt DateTime?          // For SaaS billing logic
+  // Subscription Logic
+  status             SubscriptionStatus @default(PENDING)
+  subscriptionEndsAt DateTime?          
 
-  // Staff & Management
-  members       ClinicMember[]
+  // Relations
+  members            ClinicMember[]
+  patients           Patient[]          @relation("PatientClinics")
+  facilityPrices     FacilityPrice[]
+  appointments       Appointment[]
+  treatmentSessions  TreatmentSession[]
 
-  // Patient Registry
-  patients      Patient[] @relation("PatientClinics")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
-  // Financials & Operations
-  prices        FacilityPrice[]
-  appointments  Appointment[]
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  // Indexes for Cron Jobs & Admin Dashboard
+  @@index([status])
+  @@index([subscriptionEndsAt])
 }
 
 model MedicalCenter {
-  id             String  @id @default(cuid())
-  centerName     String
+  id                 String  @id @default(cuid())
+  centerName         String
 
-  // SUBSCRIPTION & STATUS
-  status             SubscriptionStatus @default(PENDING) // Needs Admin Approval
-  subscriptionEndsAt DateTime?          // For SaaS billing logic
+  // Subscription Logic
+  status             SubscriptionStatus @default(PENDING)
+  subscriptionEndsAt DateTime?          
 
-  // Staff & Management
-  members        MedicalCenterMember[]
+  // Relations
+  members            MedicalCenterMember[]
+  patients           Patient[]           @relation("PatientMedicalCenters")
+  facilityPrices     FacilityPrice[]
+  appointments       Appointment[]
+  treatmentSessions  TreatmentSession[]
 
-  // Patient Registry
-  patients       Patient[] @relation("PatientMedicalCenters")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
-  // Financials & Operations
-  prices         FacilityPrice[]
-  appointments   Appointment[]
-
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  // Indexes for Cron Jobs & Admin Dashboard
+  @@index([status])
+  @@index([subscriptionEndsAt])
 }
 
 /* =========================================================
-   3. MEMBERSHIPS (Role-Based Access Control)
+   3. MEMBERSHIPS (RBAC)
    ========================================================= */
 
 model ClinicMember {
@@ -111,6 +114,8 @@ model ClinicMember {
   joinedAt  DateTime    @default(now())
 
   @@unique([userId, clinicId]) 
+  @@index([userId])  // Speed up "GetUserMemberships"
+  @@index([clinicId]) // Speed up "GetClinicStaff"
 }
 
 model MedicalCenterMember {
@@ -127,10 +132,12 @@ model MedicalCenterMember {
   joinedAt        DateTime      @default(now())
 
   @@unique([userId, medicalCenterId])
+  @@index([userId])
+  @@index([medicalCenterId])
 }
 
 /* =========================================================
-   4. PATIENTS & PRIVACY
+   4. PATIENTS
    ========================================================= */
 
 model Patient {
@@ -142,28 +149,30 @@ model Patient {
   birthDate     DateTime?
   gender        Gender?
 
-  // Facility Links (Where have they been treated?)
+  // Facility Links
   clinics        Clinic[]        @relation("PatientClinics")
   medicalCenters MedicalCenter[] @relation("PatientMedicalCenters")
 
-  // Audit: Who typed them in first?
+  // Audit
   createdById   String
   createdBy     User     @relation("PatientCreator", fields: [createdById], references: [id])
 
-  // Security: Grants access to Visiting Doctors
+  // Security
   doctorAccess  PatientAccess[]
 
-  // Medical Data
-  appointments  Appointment[]
-  // REMOVED: MedicalRecords relation
+  // Operations
+  appointments      Appointment[]
+  treatmentSessions TreatmentSession[]
 
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 
+  // Search Optimization
+  @@index([fullnameEn]) // Fast text search
+  @@index([fullnameAr]) // Fast text search
   @@index([phoneNumber])
 }
 
-// The "Key" that opens a patient file for a Visiting Doctor
 model PatientAccess {
   id          String   @id @default(cuid())
 
@@ -173,53 +182,88 @@ model PatientAccess {
   doctorId    String
   doctor      User     @relation(fields: [doctorId], references: [id], onDelete: Cascade)
 
-  // Context: Access is granted usually when an appointment is made
   clinicId    String? 
   
   grantedAt   DateTime @default(now())
 
   @@unique([patientId, doctorId, clinicId])
+  @@index([doctorId]) // Fast lookup for "My Visiting Patients"
 }
 
 /* =========================================================
-   5. OPERATIONS (Appointments)
+   5. OPERATIONS (Appointments & Sessions)
    ========================================================= */
 
 model Appointment {
   id          String   @id @default(cuid())
   
-  date        DateTime // Date and Time of visit
+  date        DateTime 
+  status      AppointmentStatus @default(SCHEDULED)
+  notes       String?
   
   patientId   String
-  patient     Patient  @relation(fields: [patientId], references: [id])
+  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
   
   doctorId    String
-  doctor      User     @relation("DoctorAppointments", fields: [doctorId], references: [id])
+  doctor      User     @relation("DoctorAppointments", fields: [doctorId], references: [id], onDelete: Cascade)
 
-  // Link to EITHER a Clinic OR a Center
   clinicId        String?
   clinic          Clinic?        @relation(fields: [clinicId], references: [id])
   
   medicalCenterId String?
   medicalCenter   MedicalCenter? @relation(fields: [medicalCenterId], references: [id])
 
-  status      AppointmentStatus @default(SCHEDULED)
-  notes       String?
-
   createdAt   DateTime @default(now())
+
+  @@index([date])      // Calendar queries
+  @@index([patientId]) // Patient history
+  @@index([doctorId])  // Doctor schedule
+  @@index([status])    // Filtering
 }
 
-// REMOVED: MedicalRecord Model
+model TreatmentSession {
+  id          String   @id @default(cuid())
+
+  // 1. Who?
+  patientId   String
+  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  doctorId    String
+  doctor      User     @relation("PerformedTreatments", fields: [doctorId], references: [id])
+
+  // 2. What? (Many-to-Many implicit relation)
+  treatments  Treatment[] 
+  
+  // 3. Where? (Teeth)
+  toothNumbers Int[]   // e.g. [18, 19]
+
+  // 4. Financials
+  price       Decimal  @db.Decimal(10, 2) // Precision for currency
+  note        String?
+
+  // 5. Context
+  clinicId        String?
+  clinic          Clinic?        @relation(fields: [clinicId], references: [id])
+  
+  medicalCenterId String?
+  medicalCenter   MedicalCenter? @relation(fields: [medicalCenterId], references: [id])
+
+  createdAt   DateTime @default(now())
+
+  @@index([patientId]) // Patient File
+  @@index([doctorId])  // Doctor Revenue
+  @@index([createdAt]) // Timeline sorting
+}
 
 /* =========================================================
-   6. TREATMENTS & PRICING CATALOG
+   6. CATALOG
    ========================================================= */
 
 model TreatmentGroup {
   id          String   @id @default(cuid())
   nameEn      String   @unique 
   nameAr      String?
-  color       String   // UI decoration
+  color       String   
   treatments  Treatment[]
 }
 
@@ -229,54 +273,55 @@ model Treatment {
   nameAr      String?  
   
   groupId     String
-  group       TreatmentGroup @relation(fields: [groupId], references: [id])
+  group       TreatmentGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
-  basePrice   Decimal? @default(0.0)
-  
-  // Custom prices per facility
+  // Optional fixed prices per facility
   facilityPrices FacilityPrice[]
+
+  // History linkage
+  sessions       TreatmentSession[]
   
-  // REMOVED: records relation
+  @@index([groupId])
 }
 
 model FacilityPrice {
   id              String    @id @default(cuid())
-  price           Decimal
+  price           Decimal   @db.Decimal(10, 2)
   
   treatmentId     String
-  treatment       Treatment @relation(fields: [treatmentId], references: [id])
+  treatment       Treatment @relation(fields: [treatmentId], references: [id], onDelete: Cascade)
   
   clinicId        String?
-  clinic          Clinic?   @relation(fields: [clinicId], references: [id])
+  clinic          Clinic?   @relation(fields: [clinicId], references: [id], onDelete: Cascade)
   
   medicalCenterId String?
-  medicalCenter   MedicalCenter? @relation(fields: [medicalCenterId], references: [id])
+  medicalCenter   MedicalCenter? @relation(fields: [medicalCenterId], references: [id], onDelete: Cascade)
 
   @@unique([treatmentId, clinicId])
   @@unique([treatmentId, medicalCenterId])
 }
 
 /* =========================================================
-   7. ENUMS (Logic Control)
+   7. ENUMS
    ========================================================= */
 
 enum SystemRole {
-  CUSTOMER       // Doctors, Owners, Nurses
-  SUPPORT_AGENT  // Your Company Staff (Read Only / Debug)
-  SUPER_ADMIN    // Your Company Owner (Full Control)
+  CUSTOMER
+  SUPPORT_AGENT
+  SUPER_ADMIN
 }
 
 enum ClinicRole {
-  OWNER            // Can delete clinic, set prices, see all patients
-  DOCTOR_EMPLOYEE  // See all patients, add records
-  VISITING_DOCTOR  // RESTRICTED: See only assigned 'PatientAccess' patients
-  ASSISTANT        // Schedule only
+  OWNER
+  DOCTOR_EMPLOYEE
+  VISITING_DOCTOR
+  ASSISTANT
 }
 
 enum CenterRole {
-  OWNER            // Business Owner
-  DOCTOR           // Medical Staff (Full Access to Center Patients)
-  NURSE            // Support
+  OWNER
+  DOCTOR
+  NURSE
 }
 
 enum UserStatus {
@@ -285,10 +330,10 @@ enum UserStatus {
 }
 
 enum SubscriptionStatus {
-  PENDING   // Signed up, waiting for payment/approval
-  ACTIVE    // Paid and running
-  SUSPENDED // Payment failed or policy violation
-  CANCELLED // User stopped service
+  PENDING
+  ACTIVE
+  SUSPENDED
+  CANCELLED
 }
 
 enum Gender {

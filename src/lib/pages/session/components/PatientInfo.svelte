@@ -93,7 +93,7 @@
 										<!-- Content Wrapper -->
 										<div class="z-10 flex w-full flex-col text-left rtl:text-right">
 											<p class="text-sm leading-none font-medium">
-												{getLocale() === 'ar' ? p.fullnameAr : p.fullname}
+												{getLocale() === 'ar' ? p.fullnameAr : p.fullnameEn}
 											</p>
 											<p class="mt-1.5 text-xs text-muted-foreground rtl:text-right" dir="ltr">
 												{p.phoneNumber}

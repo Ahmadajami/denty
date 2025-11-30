@@ -410,10 +410,6 @@ export type PatientAccessUncheckedUpdateManyWithoutPatientNestedInput = {
   deleteMany?: Prisma.PatientAccessScalarWhereInput | Prisma.PatientAccessScalarWhereInput[]
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
-}
-
 export type PatientAccessCreateWithoutDoctorInput = {
   id?: string
   clinicId?: string | null

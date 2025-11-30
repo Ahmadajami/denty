@@ -1,65 +1,22 @@
 import { z } from 'zod/v4';
 
-export const TreatmentGroupSchema = z.object({
-	id: z.string().optional(), // auto-generated on create
-	name: z.string().min(1, 'Group name is required'),
+// Schema for Creating/Editing a Group
+export const treatmentGroupSchema = z.object({
+	id: z.string().optional(), // Optional for create, required for edit
+	nameEn: z.string().min(1, 'English name is required'),
 	nameAr: z.string().optional(),
-	color: z.string().min(1, 'Color is required'),
-
-	// timestamps
-	createdAt: z.date().optional(),
-	updatedAt: z.date().optional()
+	color: z.string().min(1, 'Color is required').regex(/^#/, 'Must be a valid Hex color')
 });
 
-// For creating a new group
-export const TreatmentGroupCreateSchema = TreatmentGroupSchema.omit({
-	id: true,
-	createdAt: true,
-	updatedAt: true
-});
-
-// For updating (all optional)
-export const TreatmentGroupUpdateSchema = TreatmentGroupSchema.partial();
-
-export const TreatmentSchema = z.object({
-	id: z.string().optional(), // auto-generated
-	name: z.string().min(1, 'Treatment name is required'),
+// Schema for Creating/Editing a Treatment
+export const treatmentSchema = z.object({
+	id: z.string().optional(),
+	nameEn: z.string().min(1, 'English name is required'),
 	nameAr: z.string().optional(),
-
-	// relation
-	groupId: z.string(),
-
-	// Prisma Decimal → accept number or string
-	basePrice: z.union([z.number(), z.string()]).optional(),
-
-	createdAt: z.date().optional(),
-	updatedAt: z.date().optional()
+	// Coerce converts the HTML input string to a number automatically
+	basePrice: z.coerce.number().min(0, 'Price cannot be negative').default(0),
+	groupId: z.string().min(1, 'Group ID is required')
 });
 
-// For creating a new treatment
-export const TreatmentCreateSchema = TreatmentSchema.omit({
-	id: true,
-	createdAt: true,
-	updatedAt: true
-});
-
-// For updating treatment
-export const TreatmentUpdateSchema = TreatmentSchema.partial();
-export const TreatmentWithGroupSchema = TreatmentSchema.extend({
-	group: TreatmentGroupSchema
-});
-
-export const TreatmentGroupWithTreatmentsSchema = TreatmentGroupSchema.extend({
-	treatments: z.array(TreatmentSchema)
-});
-//read thsi
-export const TreatmentGroupSearchSchema = z.object({
-	query: z.string().optional() // partial match on group name
-});
-
-export const TreatmentByGroupSchema = z.object({
-	groupId: z.string()
-});
-
-export type TreatmentGroupInput = z.infer<typeof TreatmentGroupSchema>;
-export type TreatmentInput = z.infer<typeof TreatmentSchema>;
+export type TreatmentGroupSchema = typeof treatmentGroupSchema;
+export type TreatmentSchema = typeof treatmentSchema;

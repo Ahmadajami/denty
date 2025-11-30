@@ -59,6 +59,7 @@ export const ModelName = {
   Patient: 'Patient',
   PatientAccess: 'PatientAccess',
   Appointment: 'Appointment',
+  TreatmentSession: 'TreatmentSession',
   TreatmentGroup: 'TreatmentGroup',
   Treatment: 'Treatment',
   FacilityPrice: 'FacilityPrice'
@@ -89,9 +90,9 @@ export const UserScalarFieldEnum = {
   userAuthToken: 'userAuthToken',
   specialization: 'specialization',
   systemRole: 'systemRole',
+  status: 'status',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  status: 'status'
+  updatedAt: 'updatedAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -172,16 +173,31 @@ export type PatientAccessScalarFieldEnum = (typeof PatientAccessScalarFieldEnum)
 export const AppointmentScalarFieldEnum = {
   id: 'id',
   date: 'date',
+  status: 'status',
+  notes: 'notes',
   patientId: 'patientId',
   doctorId: 'doctorId',
   clinicId: 'clinicId',
   medicalCenterId: 'medicalCenterId',
-  status: 'status',
-  notes: 'notes',
   createdAt: 'createdAt'
 } as const
 
 export type AppointmentScalarFieldEnum = (typeof AppointmentScalarFieldEnum)[keyof typeof AppointmentScalarFieldEnum]
+
+
+export const TreatmentSessionScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  doctorId: 'doctorId',
+  toothNumbers: 'toothNumbers',
+  price: 'price',
+  note: 'note',
+  clinicId: 'clinicId',
+  medicalCenterId: 'medicalCenterId',
+  createdAt: 'createdAt'
+} as const
+
+export type TreatmentSessionScalarFieldEnum = (typeof TreatmentSessionScalarFieldEnum)[keyof typeof TreatmentSessionScalarFieldEnum]
 
 
 export const TreatmentGroupScalarFieldEnum = {
@@ -198,8 +214,7 @@ export const TreatmentScalarFieldEnum = {
   id: 'id',
   nameEn: 'nameEn',
   nameAr: 'nameAr',
-  groupId: 'groupId',
-  basePrice: 'basePrice'
+  groupId: 'groupId'
 } as const
 
 export type TreatmentScalarFieldEnum = (typeof TreatmentScalarFieldEnum)[keyof typeof TreatmentScalarFieldEnum]

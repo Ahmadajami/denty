@@ -19,7 +19,7 @@ export interface AppUser {
     nameAr: string;
     nameEn: string;
     phoneNumber: string;
-    specialization: string ;
+    specialization: string | null; // Fixed: Made nullable to match Prisma schema
     
     // System Level (SaaS Admin vs Customer)
     systemRole: SystemRole;
@@ -28,6 +28,7 @@ export interface AppUser {
     // 2. MEMBERSHIPS (The "Badges" they hold)
     clinicMemberships: Array<{
         role: ClinicRole;
+        // Removed 'clinicId' scalar to force usage of clinic.id which is reliably fetched
         clinic: {
             id: string;
             name: string;
@@ -37,6 +38,7 @@ export interface AppUser {
 
     centerMemberships: Array<{
         role: CenterRole;
+        // Removed 'medicalCenterId' scalar to force usage of medicalCenter.id
         medicalCenter: {
             id: string;
             centerName: string;

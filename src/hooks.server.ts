@@ -72,7 +72,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	});
 
 	if (user) {
-		// @ts-expect-error - Typescript might complain about exact Enum matching, but runtime is valid
+		
 		event.locals.user = user;
 
 		// ---------------------------------------------------------

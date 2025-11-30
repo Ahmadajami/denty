@@ -392,6 +392,7 @@ export const ModelName = {
   Patient: 'Patient',
   PatientAccess: 'PatientAccess',
   Appointment: 'Appointment',
+  TreatmentSession: 'TreatmentSession',
   TreatmentGroup: 'TreatmentGroup',
   Treatment: 'Treatment',
   FacilityPrice: 'FacilityPrice'
@@ -410,7 +411,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "clinic" | "medicalCenter" | "clinicMember" | "medicalCenterMember" | "patient" | "patientAccess" | "appointment" | "treatmentGroup" | "treatment" | "facilityPrice"
+    modelProps: "user" | "clinic" | "medicalCenter" | "clinicMember" | "medicalCenterMember" | "patient" | "patientAccess" | "appointment" | "treatmentSession" | "treatmentGroup" | "treatment" | "facilityPrice"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1006,6 +1007,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    TreatmentSession: {
+      payload: Prisma.$TreatmentSessionPayload<ExtArgs>
+      fields: Prisma.TreatmentSessionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TreatmentSessionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TreatmentSessionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TreatmentSessionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TreatmentSessionPayload>
+        }
+        findFirst: {
+          args: Prisma.TreatmentSessionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TreatmentSessionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TreatmentSessionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TreatmentSessionPayload>
+        }
+        findMany: {
+          args: Prisma.TreatmentSessionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TreatmentSessionPayload>[]
+        }
+        create: {
+          args: Prisma.TreatmentSessionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TreatmentSessionPayload>
+        }
+        createMany: {
+          args: Prisma.TreatmentSessionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.TreatmentSessionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TreatmentSessionPayload>[]
+        }
+        delete: {
+          args: Prisma.TreatmentSessionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TreatmentSessionPayload>
+        }
+        update: {
+          args: Prisma.TreatmentSessionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TreatmentSessionPayload>
+        }
+        deleteMany: {
+          args: Prisma.TreatmentSessionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TreatmentSessionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.TreatmentSessionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TreatmentSessionPayload>[]
+        }
+        upsert: {
+          args: Prisma.TreatmentSessionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TreatmentSessionPayload>
+        }
+        aggregate: {
+          args: Prisma.TreatmentSessionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTreatmentSession>
+        }
+        groupBy: {
+          args: Prisma.TreatmentSessionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TreatmentSessionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TreatmentSessionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TreatmentSessionCountAggregateOutputType> | number
+        }
+      }
+    }
     TreatmentGroup: {
       payload: Prisma.$TreatmentGroupPayload<ExtArgs>
       fields: Prisma.TreatmentGroupFieldRefs
@@ -1276,9 +1351,9 @@ export const UserScalarFieldEnum = {
   userAuthToken: 'userAuthToken',
   specialization: 'specialization',
   systemRole: 'systemRole',
+  status: 'status',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  status: 'status'
+  updatedAt: 'updatedAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -1359,16 +1434,31 @@ export type PatientAccessScalarFieldEnum = (typeof PatientAccessScalarFieldEnum)
 export const AppointmentScalarFieldEnum = {
   id: 'id',
   date: 'date',
+  status: 'status',
+  notes: 'notes',
   patientId: 'patientId',
   doctorId: 'doctorId',
   clinicId: 'clinicId',
   medicalCenterId: 'medicalCenterId',
-  status: 'status',
-  notes: 'notes',
   createdAt: 'createdAt'
 } as const
 
 export type AppointmentScalarFieldEnum = (typeof AppointmentScalarFieldEnum)[keyof typeof AppointmentScalarFieldEnum]
+
+
+export const TreatmentSessionScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  doctorId: 'doctorId',
+  toothNumbers: 'toothNumbers',
+  price: 'price',
+  note: 'note',
+  clinicId: 'clinicId',
+  medicalCenterId: 'medicalCenterId',
+  createdAt: 'createdAt'
+} as const
+
+export type TreatmentSessionScalarFieldEnum = (typeof TreatmentSessionScalarFieldEnum)[keyof typeof TreatmentSessionScalarFieldEnum]
 
 
 export const TreatmentGroupScalarFieldEnum = {
@@ -1385,8 +1475,7 @@ export const TreatmentScalarFieldEnum = {
   id: 'id',
   nameEn: 'nameEn',
   nameAr: 'nameAr',
-  groupId: 'groupId',
-  basePrice: 'basePrice'
+  groupId: 'groupId'
 } as const
 
 export type TreatmentScalarFieldEnum = (typeof TreatmentScalarFieldEnum)[keyof typeof TreatmentScalarFieldEnum]
@@ -1462,20 +1551,6 @@ export type ListEnumSystemRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$P
 
 
 /**
- * Reference to a field of type 'DateTime'
- */
-export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
-    
-
-
-/**
- * Reference to a field of type 'DateTime[]'
- */
-export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
-    
-
-
-/**
  * Reference to a field of type 'UserStatus'
  */
 export type EnumUserStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserStatus'>
@@ -1486,6 +1561,20 @@ export type EnumUserStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Prism
  * Reference to a field of type 'UserStatus[]'
  */
 export type ListEnumUserStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'DateTime'
+ */
+export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
+    
+
+
+/**
+ * Reference to a field of type 'DateTime[]'
+ */
+export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
     
 
 
@@ -1560,16 +1649,9 @@ export type ListEnumAppointmentStatusFieldRefInput<$PrismaModel> = FieldRefInput
 
 
 /**
- * Reference to a field of type 'Decimal'
+ * Reference to a field of type 'Int[]'
  */
-export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
-    
-
-
-/**
- * Reference to a field of type 'Decimal[]'
- */
-export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
+export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
     
 
 
@@ -1581,9 +1663,16 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
 
 
 /**
- * Reference to a field of type 'Int[]'
+ * Reference to a field of type 'Decimal'
  */
-export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
+    
+
+
+/**
+ * Reference to a field of type 'Decimal[]'
+ */
+export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
     
 
 /**
@@ -1673,6 +1762,7 @@ export type GlobalOmitConfig = {
   patient?: Prisma.PatientOmit
   patientAccess?: Prisma.PatientAccessOmit
   appointment?: Prisma.AppointmentOmit
+  treatmentSession?: Prisma.TreatmentSessionOmit
   treatmentGroup?: Prisma.TreatmentGroupOmit
   treatment?: Prisma.TreatmentOmit
   facilityPrice?: Prisma.FacilityPriceOmit

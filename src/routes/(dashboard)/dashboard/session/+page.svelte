@@ -11,25 +11,28 @@
 	import BadgeInfo from '@lucide/svelte/icons/badge-info';
 	import SearchIcon from '@lucide/svelte/icons/search';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
+	import DollarSign from '@lucide/svelte/icons/dollar-sign'; // Added for Price UI
 
 	type Treatment = {
 		id: string;
-		name: string;
+		nameEn: string; // Changed from name to nameEn
 		nameAr: string | null;
 		groupId: string;
-		basePrice: number | null;
+		// REMOVED: basePrice
 	};
 
 	type TreatmentGroup = {
 		id: string;
-		name: string;
+		nameEn: string; // Changed from name to nameEn
 		nameAr: string | null;
 		color: string;
+		treatments?: Treatment[]; // Added optional nested treatments for type safety
 	};
 
 	type TreatmentSelection = {
 		toothNumber: number;
 		treatmentId: string;
+		// Notes could be added here later if needed per tooth
 	};
 
 	type TreatmentRegistryItem = {
@@ -40,7 +43,7 @@
 
 <script lang="ts">
 	import { superForm } from 'sveltekit-superforms';
-	import { zod4 } from 'sveltekit-superforms/adapters';
+	import { zod4 } from 'sveltekit-superforms/adapters'; // Switched to standard zod adapter
 	import { toast } from 'svelte-sonner';
 	import { normalizeTelInput, parsePhoneNumberWithError } from 'svelte-tel-input';
 	import type { E164Number } from 'svelte-tel-input/types';
@@ -49,9 +52,10 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import * as Accordion from '$lib/components/ui/accordion/index.js';
-	import * as Tabs from '$lib/components/ui/tabs/index.js';
+	import * as Form from '$lib/components/ui/form/index.js'; // Import Form
 	import SuperDebug from 'sveltekit-superforms';
 
 	import AddPatient from '$lib/shared/AddPatient.svelte';
@@ -73,21 +77,25 @@
 		taintedMessage: true,
 
 		onSubmit: async ({ cancel }) => {
+			// Validation logic for multi-step
 			if (currentStep === STEPS.length) return;
 			else cancel();
+
+			// Validate current step before moving
 			const result = await form.validateForm({ update: true });
 			if (result.valid) currentStep++;
+			console.log('result', result.errors);
 		},
 		async onUpdated({ form }) {
 			if (form.valid) {
+				// Reset on success
 				currentStep = 1;
-
-				console.log('currentStep must Change');
+				// console.log('Session Created');
 			}
 		}
 	});
 
-	const { form: formData, enhance, delayed } = form;
+	const { form: formData, enhance, delayed, errors } = form;
 
 	// --- State ---
 	let currentStep = $state(1);
@@ -100,25 +108,31 @@
 	let expandedGroups = $state<string[]>([]);
 
 	// --- Derived Data (From Server) ---
-	const treatmentGroups = $derived(data.treatmentGroups || []);
+	// Cast the raw data to our TreatmentGroup type to ensure TS knows about structure
+	const treatmentGroups = $derived((data.catalog || []) as unknown as TreatmentGroup[]);
 
 	const { allTreatments, registry } = $derived.by(() => {
 		const mapT = new Map<string, Treatment[]>();
 		const mapR = new Map<string, TreatmentRegistryItem>();
 
-		const groups = data.treatmentGroups || [];
-		const list = data.treatments || [];
+		const groups = treatmentGroups;
 
-		// Initialize map for all groups to ensure they exist
 		for (const g of groups) {
-			mapT.set(g.id, []);
-		}
+			// 1. Get raw treatments (they lack groupId and rely on nameEn)
 
-		// Populate maps
-		for (const t of list) {
-			const g = groups.find((x) => x.id === t.groupId);
-			if (g) {
-				mapT.get(g.id)?.push(t);
+			const rawTreatments = g.treatments || [];
+
+			// 2. Map them to full Treatment objects by injecting groupId
+			const list: Treatment[] = rawTreatments.map((t: any) => ({
+				id: t.id,
+				nameEn: t.nameEn,
+				nameAr: t.nameAr,
+				groupId: g.id // Inject parent ID
+			}));
+
+			mapT.set(g.id, list);
+
+			for (const t of list) {
 				mapR.set(t.id, { treatment: t, group: g });
 			}
 		}
@@ -193,8 +207,9 @@
 
 	// Sync phone number from URL if present
 	$effect(() => {
-		if (data.PhoneNumber) {
-			const n = getE164Number('+' + data.PhoneNumber);
+		if (data.phoneNumber) {
+			// Case sensitive match to load function
+			const n = getE164Number('+' + data.phoneNumber);
 			if (n) {
 				query = n;
 				$formData.phone = query;
@@ -203,8 +218,10 @@
 	});
 
 	// --- Helpers ---
-	function resolveName(item: { name: string; nameAr: string | null }) {
-		return getLocale() === 'ar' ? (item.nameAr ?? item.name) : item.name;
+	function resolveName(item: { name?: string; nameEn?: string; nameAr: string | null }) {
+		// Handle potentially different field names from Prisma vs Type
+		const en = item.nameEn || item.name || '';
+		return getLocale() === 'ar' ? (item.nameAr ?? en) : en;
 	}
 
 	function getE164Number(p: string) {
@@ -266,7 +283,7 @@
 </script>
 
 <!-- --- SNIPPETS --- -->
-
+<SuperDebug data={$formData} />
 {#snippet treatmentItem(t: Treatment, isSelected: boolean)}
 	<button
 		type="button"
@@ -307,6 +324,7 @@
 		</PatientInfo>
 	</section>
 {/snippet}
+
 {#snippet stepTwo()}
 	<div
 		class="flex h-full w-full animate-in flex-col gap-6 p-4 fade-in slide-in-from-bottom-4 md:p-6"
@@ -503,7 +521,7 @@
 								onclick={() => document.forms[0].requestSubmit()}
 								disabled={!$formData.toothTreatments.length}
 							>
-								Review & Submit
+								Next Step
 							</Button>
 						</div>
 					</Card.Footer>
@@ -555,8 +573,34 @@
 					</div>
 				</div>
 
-				<!-- Treatments Section -->
+				<!-- Financials Section (NEW) -->
 				<div class="space-y-4">
+					<h3
+						class="flex items-center gap-2 text-sm font-semibold tracking-wider text-muted-foreground uppercase"
+					>
+						<DollarSign class="h-4 w-4" /> Financials
+					</h3>
+					<div class="rounded-xl border bg-muted/20 p-4">
+						<!-- Use Form.Field for automatic error handling if using shadcn form wrapper -->
+						<div class="grid gap-2">
+							<Label for="price">Total Price</Label>
+							<Input
+								id="price"
+								type="number"
+								step="0.01"
+								placeholder="0.00"
+								bind:value={$formData.totalPrice}
+								class="text-lg font-bold"
+							/>
+							<p class="text-xs text-muted-foreground">
+								Enter the total amount to charge for this session.
+							</p>
+						</div>
+					</div>
+				</div>
+
+				<!-- Treatments Section -->
+				<div class="space-y-4 md:col-span-2">
 					<div class="flex items-center justify-between">
 						<h3
 							class="flex items-center gap-2 text-sm font-semibold tracking-wider text-muted-foreground uppercase"
@@ -618,6 +662,7 @@
 				</Button>
 			</Card.Footer>
 		</Card.Root>
+		{JSON.stringify(errors, null, 2)}
 	</section>
 {/snippet}
 
@@ -634,8 +679,6 @@
 	</div>
 {/if}
 
-<!-- <SuperDebug data={$formData} /> -->
-
 <AddPatient
 	patientForm={data.patientForm}
 	bind:addPatientDialog
@@ -650,7 +693,7 @@
 
 <div class="flex min-h-screen flex-col">
 	<!-- Top Navigation -->
-	<header class="sticky top-0 z-30 w-full border-b backdrop-blur">
+	<header class="sticky top-0 z-30 w-full border-b bg-background/80 backdrop-blur">
 		<div class="container flex h-16 items-center justify-between px-4">
 			<div class="flex items-center gap-2">
 				{#if currentStep > 1}

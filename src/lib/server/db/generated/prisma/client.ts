@@ -80,6 +80,11 @@ export type PatientAccess = Prisma.PatientAccessModel
  */
 export type Appointment = Prisma.AppointmentModel
 /**
+ * Model TreatmentSession
+ * 
+ */
+export type TreatmentSession = Prisma.TreatmentSessionModel
+/**
  * Model TreatmentGroup
  * 
  */

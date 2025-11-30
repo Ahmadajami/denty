@@ -1,7 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { setDefaultResultOrder } from 'node:dns';
-setDefaultResultOrder('ipv4first');
-
 import { superValidate, fail, message } from 'sveltekit-superforms';
 import type { Actions, PageServerLoad } from './$types';
 import { reportLastStep } from '$lib/zod/session';
@@ -9,32 +6,30 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 import { crudPatientSchema } from '$lib/zod/patient';
 import nodemailer from 'nodemailer';
 import { DOPPIO_API_KEY, GMAILAPP } from '$env/static/private';
-import { getAllTreatmentsGroups } from '$lib/server/treatment';
+import { getCatalog } from '$lib/server/treatment';
 import { db } from '$lib/server/prisma';
 import { initialTeethData, initToothstyle } from '$lib/shared/tooth/chartData';
 
 export const load: PageServerLoad = async ({ url }) => {
+	// 1. Initialize Forms
+	// reportLastStep covers the full multi-step session data
 	const form = await superValidate(zod4(reportLastStep));
 	const patientForm = await superValidate(zod4(crudPatientSchema));
-	const PhoneNumber = url.searchParams.get('phone');
-	const treatmentGroups = await getAllTreatmentsGroups();
-	const treatments = await db.treatment.findMany({
-		orderBy: {
-			name: 'asc'
-		}
-	});
 
-	const serializedTreatments = treatments.map((t) => ({
-		...t,
-		basePrice: t.basePrice ? Number(t.basePrice) : null
-	}));
+	// 2. Get Context
+	// If coming from the patient list, we might have a phone number in the URL
+	const phoneNumber = url.searchParams.get('phone');
+
+	// 3. Fetch Catalog
+	// Use the new service function to get Groups with nested Treatments.
+	// This structure (catalog -> treatments) is better for the UI accordion/grouping.
+	const catalog = await getCatalog();
 
 	return {
 		form,
-		PhoneNumber,
 		patientForm,
-		treatmentGroups,
-		treatments: serializedTreatments
+		phoneNumber,
+		catalog
 	};
 };
 
@@ -145,69 +140,100 @@ function generateReportHtml(
 
 export const actions: Actions = {
 	new_session: async ({ request, fetch, locals }) => {
-		console.log('Server action called');
 		const form = await superValidate(request, zod4(reportLastStep));
 
-		if (!form.valid) return fail(400, { form });
+		if (!form.valid) {
+			return fail(400, { form });
+		}
 
 		const user = locals.user;
 		if (!user) return fail(401, { form });
 
-		// Resolve Context (Clinic/MedicalCenter)
+		/* ---------------------------------------------------------
+           1. RESOLVE CONTEXT (Clinic vs Medical Center)
+           --------------------------------------------------------- */
+		// We prioritize ownership, then employment.
 		let clinicId: string | null = null;
 		let medicalCenterId: string | null = null;
 
-		if (user.type === 'CLINIC_OWNER' && user.ownedClinic) {
-			clinicId = user.ownedClinic.id;
-		} else if (user.type === 'MEDICAL_CENTER_OWNER' && user.ownedMedicalCenter) {
-			medicalCenterId = user.ownedMedicalCenter.id;
-		} else if (user.type === 'MEDICAL_CENTER_DOCTOR' && user.medicalCenter) {
-			medicalCenterId = user.medicalCenter.id;
+		// Check Clinic (Owner or Employee)
+		const clinicMembership = user.clinicMemberships.find((m) =>
+			['OWNER', 'DOCTOR_EMPLOYEE'].includes(m.role)
+		);
+		if (clinicMembership) {
+			// FIX: Access ID via nested object, not scalar (as per app.d.ts)
+			clinicId = clinicMembership.clinic.id;
 		}
 
-		// Find Patient
+		// Check Medical Center (Owner or Doctor)
+		// If no clinic context found, check center.
+		if (!clinicId) {
+			const centerMembership = user.centerMemberships.find((m) =>
+				['OWNER', 'DOCTOR'].includes(m.role)
+			);
+			if (centerMembership) {
+				// FIX: Access ID via nested object, not scalar (as per app.d.ts)
+				medicalCenterId = centerMembership.medicalCenter.id;
+			}
+		}
+
+		if (!clinicId && !medicalCenterId) {
+			return fail(403, { form, error: 'No active clinic or medical center membership found.' });
+		}
+
+		/* ---------------------------------------------------------
+           2. FIND PATIENT
+           --------------------------------------------------------- */
 		const patient = await db.patient.findUnique({
 			where: { phoneNumber: form.data.phone }
 		});
 
 		if (!patient) {
-			return fail(400, { form, error: 'Patient not found' });
+			return fail(404, { form, error: 'Patient not found' });
 		}
 
-		// Save to DB
+		/* ---------------------------------------------------------
+           3. SAVE TO DATABASE
+           --------------------------------------------------------- */
 		try {
+			// Extract unique IDs for the Many-to-Many relation
+			const uniqueTreatmentIds = [...new Set(form.data.toothTreatments.map((t) => t.treatmentId))];
+			const uniqueTeeth = [...new Set(form.data.toothTreatments.map((t) => t.toothNumber))];
+
 			await db.treatmentSession.create({
 				data: {
 					patientId: patient.id,
 					doctorId: user.id,
 					clinicId,
 					medicalCenterId,
-					items: {
-						create: form.data.toothTreatments.map((t: any) => ({
-							treatmentId: t.treatmentId,
-							toothNumber: t.toothNumber
-						}))
+					price: form.data.totalPrice,
+					toothNumbers: uniqueTeeth,
+
+					// Connect multiple treatments to this single session
+					treatments: {
+						connect: uniqueTreatmentIds.map((id) => ({ id }))
 					}
 				}
 			});
-			console.log('✅ Session saved to DB');
 		} catch (e) {
 			console.error('DB Save Error', e);
 			return fail(500, { form, error: 'Database Error' });
 		}
 
-		console.log('Form is valid. Generating PDF via Doppio...');
+		/* ---------------------------------------------------------
+           4. GENERATE PDF & SEND EMAIL
+           --------------------------------------------------------- */
 		let emailSent = false;
 
 		try {
-			// 1. Fetch Data Context
-			const groups = await getAllTreatmentsGroups();
-			const groupMap = new Map<string, any>(groups.map((g: any) => [g.id, g]));
+			// A. Fetch Data Context for PDF Generation
+			const groups = await db.treatmentGroup.findMany();
+			const groupMap = new Map(groups.map((g) => [g.id, g]));
 
 			const treatments = await db.treatment.findMany();
-			const treatmentMap = new Map<string, any>();
-			treatments.forEach((t: any) => treatmentMap.set(t.id, t));
+			const treatmentMap = new Map(treatments.map((t) => [t.id, t]));
 
+			// B. Generate HTML
 			const htmlContent = generateReportHtml(
 				form.data.phone,
 				form.data.toothTreatments,
@@ -215,12 +241,10 @@ export const actions: Actions = {
 				groupMap
 			);
 
-			if (!DOPPIO_API_KEY) {
-				throw new Error('DOPPIO_API_KEY is not configured.');
-			}
+			if (!DOPPIO_API_KEY) throw new Error('DOPPIO_API_KEY is not configured.');
 
+			// C. Render PDF
 			const encodedHTML = Buffer.from(htmlContent, 'utf8').toString('base64');
-
 			const doppioRes = await fetch('https://api.doppio.sh/v1/render/pdf/direct', {
 				method: 'POST',
 				headers: {
@@ -229,20 +253,11 @@ export const actions: Actions = {
 				},
 				body: JSON.stringify({
 					page: {
-						// The documentation requires 'setContent' with 'html' (base64 encoded)
-						setContent: {
-							html: encodedHTML
-						},
-						// PDF Options
+						setContent: { html: encodedHTML },
 						pdf: {
 							printBackground: true,
 							format: 'A4',
-							margin: {
-								top: '20px',
-								right: '20px',
-								bottom: '20px',
-								left: '20px'
-							}
+							margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' }
 						}
 					}
 				})
@@ -256,20 +271,20 @@ export const actions: Actions = {
 			const pdfArrayBuffer = await doppioRes.arrayBuffer();
 			const pdfBuffer = Buffer.from(pdfArrayBuffer);
 
-			// 3. Send Email
+			// D. Send Email
 			const transporter = nodemailer.createTransport({
 				service: 'gmail',
 				auth: {
-					user: 'a.alajami963@gmail.com',
+					user: 'a.alajami963@gmail.com', // Recommend moving to env variable
 					pass: GMAILAPP
 				}
 			});
 
 			await transporter.sendMail({
-				from: 'Dental Clinic',
-				to: 'ahmad_2000_aj@hotmail.com',
-				subject: `New Session Report `,
-				text: `A new session has been recorded for patient.`,
+				from: 'Dental Clinic System',
+				to: 'ahmad_2000_aj@hotmail.com', // In prod, maybe use patient.email or user.email
+				subject: `New Session Report - ${patient.fullnameEn}`,
+				text: `A new session has been recorded for patient ${patient.fullnameEn}.`,
 				attachments: [
 					{
 						filename: `session-${Date.now()}.pdf`,
@@ -278,11 +293,11 @@ export const actions: Actions = {
 				]
 			});
 
-			console.log('✅ Email sent successfully');
 			emailSent = true;
 		} catch (error) {
-			console.error('❌ Error processing session:', error);
-			if (error instanceof Error) console.error(error.message);
+			console.error('❌ Error processing session PDF/Email:', error);
+			// We do NOT fail the request here, because the DB save was successful.
+			// We just warn the user.
 		}
 
 		return message(form, emailSent ? 'SUCCESS' : 'WARNING_EMAIL_FAILED');
