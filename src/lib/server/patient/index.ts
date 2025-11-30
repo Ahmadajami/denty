@@ -1,129 +1,118 @@
 import { db } from '$lib/server/prisma';
-import type { IdentityType } from '$lib/auth';
-import { crudPatientSchema } from '$lib/zod/patient'; // adjust path to your schema
-import {
-	isClinicOwner,
-	isMedicalCenterDoctor,
-	isMedicalCenterOwner,
-	type AppUser
-} from '$lib/auth/user';
+
+import { crudPatientSchema } from '$lib/zod/patient'; 
+
 import { sanitizePhoneNumber } from '$lib/utils';
+import type { AppUser } from '$lib/auth/user';
 
-interface CreatePatientUser {
-	id: string;
-	type: IdentityType;
-	ownedClinic?: { id: string } | null;
-	ownedMedicalCenter?: { id: string } | null;
-	medicalCenter?: { id: string } | null;
+/**
+ * Creates a patient and links them to ALL facilities where the user 
+ * has a 'Working' role (Owner, Employee, Doctor).
+ * * It DOES NOT link to facilities where the user is just a VISITOR.
+ */
+export async function createPatient(user: AppUser, input: unknown) {
+    // 1. Validate input
+    const parsed = crudPatientSchema.parse(input);
+    const { fullname, fullnameAr, phone } = parsed;
+    const phoneNumber = sanitizePhoneNumber(phone);
+
+    // 2. Determine Scope: Where should this patient be registered?
+    
+    // A. Clinics: Owner or Employee
+    const connectedClinicIds = user.clinicMemberships
+        .filter(m => m.role === 'OWNER' || m.role === 'DOCTOR_EMPLOYEE')
+        .map(m => ({ id: m.clinic.id }));
+
+    // B. Medical Centers: Owner or Doctor
+    const connectedCenterIds = user.centerMemberships
+        .filter(m => m.role === 'OWNER' || m.role === 'DOCTOR')
+        .map(m => ({ id: m.medicalCenter.id }));
+
+    // 3. Create Record
+    return await db.patient.create({
+        data: {
+            fullnameEn: fullname, 
+            fullnameAr: fullnameAr,
+            phoneNumber: phoneNumber,
+            createdById: user.id,
+            
+            // Connect to all valid facilities found
+            clinics: { 
+                connect: connectedClinicIds 
+            },
+            medicalCenters: { 
+                connect: connectedCenterIds 
+            }
+        },
+        include: {
+            clinics: true,
+            medicalCenters: true
+        }
+    });
 }
 
-export async function createPatient(user: CreatePatientUser, input: unknown) {
-	// ✅ Validate input using your Zod schema
-	const parsed = crudPatientSchema.parse(input);
-
-	// Map Zod → Prisma fields
-	const { fullname, fullnameAr, phone } = parsed;
-	const phoneNumber = sanitizePhoneNumber(phone);
-	// Base patient data
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const data: any = {
-		fullname,
-		fullnameAr: fullnameAr,
-		phoneNumber: phoneNumber,
-		createdById: user.id,
-		clinics: { connect: [] },
-		medicalCenters: { connect: [] }
-	};
-
-	// Auto-link based on user identity
-	switch (user.type) {
-		case 'CLINIC_OWNER':
-			if (user.ownedClinic?.id) {
-				data.clinics.connect.push({ id: user.ownedClinic.id });
-			}
-			break;
-
-		case 'MEDICAL_CENTER_OWNER':
-			if (user.ownedMedicalCenter?.id) {
-				data.medicalCenters.connect.push({ id: user.ownedMedicalCenter.id });
-			}
-			break;
-
-		case 'MEDICAL_CENTER_DOCTOR':
-			if (user.medicalCenter?.id) {
-				data.medicalCenters.connect.push({ id: user.medicalCenter.id });
-			}
-			break;
-
-		// ADMIN & USER → no automatic linking
-		case 'ADMIN':
-		case 'USER':
-			break;
-	}
-
-	// Create patient record
-	return await db.patient.create({
-		data,
-		include: {
-			clinics: true,
-			medicalCenters: true
-		}
-	});
-}
-
-//search
-
+/**
+ * Searches for patients based on the User's sophisticated RBAC.
+ * * - Owners/Employees see ALL patients in their facility.
+ * - Visitors see ONLY patients shared with them via 'PatientAccess'.
+ */
 export async function searchPatients(user: AppUser, query: string) {
-	if (!user) return [];
-	const phoneNumber = sanitizePhoneNumber(query);
-	// 1. Initialize the base filter: Strict Phone Search
-	// We use specific 'contains' logic.
-	// Note: If you want exact matches only, remove specific object and just use `phoneNumber: query`
-	const baseFilter = {
-		phoneNumber: { contains: phoneNumber }
-	};
+    if (!user) return [];
+    
+    const phoneNumber = sanitizePhoneNumber(query);
+    if (!phoneNumber) return [];
 
-	// 2. Define the scope (Security Filter)
-	// We will merge this with the baseFilter later
-	let scopeFilter = {};
+    // 1. Collect IDs for "Full Access" Facilities
+    // (Where user is Owner or Regular Employee)
+    const fullAccessClinicIds = user.clinicMemberships
+        .filter(m => m.role === 'OWNER' || m.role === 'DOCTOR_EMPLOYEE')
+        .map(m => m.clinic.id);
 
-	if (isClinicOwner(user)) {
-		// Search only within this owner's clinic
-		scopeFilter = {
-			clinics: { some: { id: user.ownedClinic?.id } }
-		};
-	} else if (isMedicalCenterOwner(user)) {
-		// Search only within this owner's medical center
-		scopeFilter = {
-			medicalCenters: { some: { id: user.ownedMedicalCenter?.id } }
-		};
-	} else if (isMedicalCenterDoctor(user)) {
-		// Search only within the doctor's assigned medical center
-		scopeFilter = {
-			medicalCenters: { some: { id: user.medicalCenter?.id } }
-		};
-	} else {
-		return [];
-	}
+    const fullAccessCenterIds = user.centerMemberships
+        .filter(m => m.role === 'OWNER' || m.role === 'DOCTOR')
+        .map(m => m.medicalCenter.id);
 
-	// 3. Construct Final Where Clause
-	// Merging the Phone check + The Facility check
-	const whereClause = {
-		...baseFilter,
-		...scopeFilter
-	};
+    // 2. Construct the Security Filter
+    // The user can see the patient IF:
+    const securityFilter = {
+        OR: [
+            // A. Patient belongs to a Clinic where I am Owner/Employee
+            { 
+                clinics: { 
+                    some: { id: { in: fullAccessClinicIds } } 
+                } 
+            },
+            // B. Patient belongs to a Center where I am Owner/Doctor
+            { 
+                medicalCenters: { 
+                    some: { id: { in: fullAccessCenterIds } } 
+                } 
+            },
+            // C. I have specific Visitor Access to this patient
+            // (Works even if I am a VISITING_DOCTOR)
+            { 
+                doctorAccess: { 
+                    some: { doctorId: user.id } 
+                } 
+            }
+        ]
+    };
 
-	// 4. Execute Query
-	const p = await db.patient.findMany({
-		where: whereClause,
-		select: {
-			fullname: true,
-			fullnameAr: true,
-			phoneNumber: true
-		},
-		orderBy: { createdAt: 'desc' },
-		take: 50
-	});
+    // 3. Execute Query
+    const patients = await db.patient.findMany({
+        where: {
+            phoneNumber: { contains: phoneNumber }, // Base search
+            ...securityFilter // Applied security
+        },
+        select: {
+            id: true,
+            fullnameEn: true,
+            fullnameAr: true,
+            phoneNumber: true
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 50
+    });
 
-	return p;
+    return patients;
 }

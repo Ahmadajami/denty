@@ -9,10 +9,65 @@
 * 🟢 You can import this file directly.
 */
 
+export const SystemRole = {
+  CUSTOMER: 'CUSTOMER',
+  SUPPORT_AGENT: 'SUPPORT_AGENT',
+  SUPER_ADMIN: 'SUPER_ADMIN'
+} as const
+
+export type SystemRole = (typeof SystemRole)[keyof typeof SystemRole]
+
+
+export const ClinicRole = {
+  OWNER: 'OWNER',
+  DOCTOR_EMPLOYEE: 'DOCTOR_EMPLOYEE',
+  VISITING_DOCTOR: 'VISITING_DOCTOR',
+  ASSISTANT: 'ASSISTANT'
+} as const
+
+export type ClinicRole = (typeof ClinicRole)[keyof typeof ClinicRole]
+
+
+export const CenterRole = {
+  OWNER: 'OWNER',
+  DOCTOR: 'DOCTOR',
+  NURSE: 'NURSE'
+} as const
+
+export type CenterRole = (typeof CenterRole)[keyof typeof CenterRole]
+
+
+export const UserStatus = {
+  ACTIVE: 'ACTIVE',
+  SUSPENDED: 'SUSPENDED'
+} as const
+
+export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus]
+
+
 export const SubscriptionStatus = {
   PENDING: 'PENDING',
-  SUCCESS: 'SUCCESS',
+  ACTIVE: 'ACTIVE',
+  SUSPENDED: 'SUSPENDED',
   CANCELLED: 'CANCELLED'
 } as const
 
 export type SubscriptionStatus = (typeof SubscriptionStatus)[keyof typeof SubscriptionStatus]
+
+
+export const Gender = {
+  MALE: 'MALE',
+  FEMALE: 'FEMALE'
+} as const
+
+export type Gender = (typeof Gender)[keyof typeof Gender]
+
+
+export const AppointmentStatus = {
+  SCHEDULED: 'SCHEDULED',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+  NO_SHOW: 'NO_SHOW'
+} as const
+
+export type AppointmentStatus = (typeof AppointmentStatus)[keyof typeof AppointmentStatus]

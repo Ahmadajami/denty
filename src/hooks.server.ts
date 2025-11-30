@@ -1,8 +1,8 @@
-import type { Handle } from '@sveltejs/kit';
+import { redirect, type Handle } from '@sveltejs/kit';
 import { paraglideMiddleware } from '$lib/paraglide/server';
-
 import { sequence } from '@sveltejs/kit/hooks';
-import { db } from '$lib/server/prisma';
+import { db } from '$lib/server/prisma'; // Ensure this matches your db export path
+import { localizeHref } from '$lib/paraglide/runtime';
 
 // Paraglide middleware as a SvelteKit handle
 const handleParaglide: Handle = async ({ event, resolve }) => {
@@ -10,17 +10,26 @@ const handleParaglide: Handle = async ({ event, resolve }) => {
 		event.request = request;
 
 		const dir = locale === 'ar' ? 'rtl' : 'ltr';
+
 		return resolve(event, {
 			transformPageChunk: ({ html }) =>
 				html.replace('%paraglide.lang%', locale).replace('%dir%', dir)
 		});
 	});
 };
-//auth MiddleWare
+
+// Auth Middleware
 const handleAuth: Handle = async ({ event, resolve }) => {
 	const session = event.cookies.get('session');
-	if (!session) return resolve(event);
 
+	if (!session) {
+		// Ensure locals.user is explicitly null if no session
+		// @ts-expect-error - locals type might not explicitly allow null yet depending on app.d.ts
+		event.locals.user = null;
+		return resolve(event);
+	}
+
+	// Fetch User AND their Memberships
 	const user = await db.user.findUnique({
 		where: { userAuthToken: session },
 		select: {
@@ -29,57 +38,74 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 			nameEn: true,
 			phoneNumber: true,
 			specialization: true,
-			role: true,
-			ownedClinic: true,
-			ownedMedicalCenter: true,
-			isOwner: true,
-			medicalCenter: true,
-			status: true
+			systemRole: true,
+			status: true,
+
+			// 1. Fetch Clinic Memberships (The "Badges")
+			clinicMemberships: {
+				select: {
+					role: true,
+					clinic: {
+						select: {
+							id: true,
+							name: true,
+							status: true // We need this for the check below
+						}
+					}
+				}
+			},
+
+			// 2. Fetch Center Memberships
+			centerMemberships: {
+				select: {
+					role: true,
+					medicalCenter: {
+						select: {
+							id: true,
+							centerName: true,
+							status: true // We need this for the check below
+						}
+					}
+				}
+			}
 		}
 	});
 
-	if (!user) return resolve(event);
+	if (user) {
+		// @ts-expect-error - Typescript might complain about exact Enum matching, but runtime is valid
+		event.locals.user = user;
 
-	// Assign typed locals.user
-	if (user.isOwner && user.ownedClinic) {
-		event.locals.user = {
-			type: 'CLINIC_OWNER',
-			id: user.id,
-			nameAr: user.nameAr,
-			nameEn: user.nameEn,
-			specialization: user.specialization,
-			phoneNumber: user.phoneNumber,
-			isOwner: true,
-			status: user.status,
-			role: user.role,
-			ownedClinic: user.ownedClinic
-		};
-	} else if (user.isOwner && user.ownedMedicalCenter) {
-		event.locals.user = {
-			type: 'MEDICAL_CENTER_OWNER',
-			id: user.id,
-			nameAr: user.nameAr,
-			nameEn: user.nameEn,
-			specialization: user.specialization,
-			phoneNumber: user.phoneNumber,
-			isOwner: true,
-			status: user.status,
-			role: user.role,
-			ownedMedicalCenter: user.ownedMedicalCenter
-		};
-	} else if (!user.isOwner && user.medicalCenter) {
-		event.locals.user = {
-			type: 'MEDICAL_CENTER_DOCTOR',
-			id: user.id,
-			nameAr: user.nameAr,
-			nameEn: user.nameEn,
-			specialization: user.specialization,
-			phoneNumber: user.phoneNumber,
-			isOwner: false,
-			status: user.status,
-			role: user.role,
-			medicalCenter: user.medicalCenter
-		};
+		// ---------------------------------------------------------
+		// SUBSCRIPTION CHECK
+		// ---------------------------------------------------------
+		// Only run on dashboard routes to prevent blocking public pages/api
+		// And avoid infinite loops by excluding the pending page itself
+		if (
+			event.url.pathname.startsWith('/dashboard') &&
+			!event.url.pathname.startsWith('/dashboard/pending')
+		) {
+			// 1. Check Clinic Status (Blocks Owners AND Employees)
+			// We verify if the user has a role that implies 'employment' (not just a visitor)
+			const clinicMembership = user.clinicMemberships.find((m) =>
+				['OWNER', 'DOCTOR_EMPLOYEE', 'ASSISTANT'].includes(m.role)
+			);
+
+			if (clinicMembership && clinicMembership.clinic.status !== 'ACTIVE') {
+				redirect(303, localizeHref('/dashboard/pending'));
+			}
+
+			// 2. Check Medical Center Status (Blocks Owners, Doctors, Nurses)
+			const centerMembership = user.centerMemberships.find((m) =>
+				['OWNER', 'DOCTOR', 'NURSE'].includes(m.role)
+			);
+
+			if (centerMembership && centerMembership.medicalCenter.status !== 'ACTIVE') {
+				redirect(303, localizeHref('/dashboard/pending'));
+			}
+		}
+	} else {
+		// @ts-expect-error - Session invalid (user deleted or token changed)
+		event.locals.user = null;
 	}
 
 	return resolve(event);

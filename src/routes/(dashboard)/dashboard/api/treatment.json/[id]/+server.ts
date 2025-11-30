@@ -26,7 +26,6 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 	try {
 		const treatments = await db.treatment.findMany({
 			where: { groupId },
-			orderBy: { name: 'asc' }
 		});
 
 		return json(treatments, { status: 200 });

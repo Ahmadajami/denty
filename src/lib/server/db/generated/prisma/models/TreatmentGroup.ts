@@ -26,58 +26,46 @@ export type AggregateTreatmentGroup = {
 
 export type TreatmentGroupMinAggregateOutputType = {
   id: string | null
-  name: string | null
+  nameEn: string | null
   nameAr: string | null
   color: string | null
-  createdAt: Date | null
-  updatedAt: Date | null
 }
 
 export type TreatmentGroupMaxAggregateOutputType = {
   id: string | null
-  name: string | null
+  nameEn: string | null
   nameAr: string | null
   color: string | null
-  createdAt: Date | null
-  updatedAt: Date | null
 }
 
 export type TreatmentGroupCountAggregateOutputType = {
   id: number
-  name: number
+  nameEn: number
   nameAr: number
   color: number
-  createdAt: number
-  updatedAt: number
   _all: number
 }
 
 
 export type TreatmentGroupMinAggregateInputType = {
   id?: true
-  name?: true
+  nameEn?: true
   nameAr?: true
   color?: true
-  createdAt?: true
-  updatedAt?: true
 }
 
 export type TreatmentGroupMaxAggregateInputType = {
   id?: true
-  name?: true
+  nameEn?: true
   nameAr?: true
   color?: true
-  createdAt?: true
-  updatedAt?: true
 }
 
 export type TreatmentGroupCountAggregateInputType = {
   id?: true
-  name?: true
+  nameEn?: true
   nameAr?: true
   color?: true
-  createdAt?: true
-  updatedAt?: true
   _all?: true
 }
 
@@ -155,11 +143,9 @@ export type TreatmentGroupGroupByArgs<ExtArgs extends runtime.Types.Extensions.I
 
 export type TreatmentGroupGroupByOutputType = {
   id: string
-  name: string
+  nameEn: string
   nameAr: string | null
   color: string
-  createdAt: Date
-  updatedAt: Date
   _count: TreatmentGroupCountAggregateOutputType | null
   _min: TreatmentGroupMinAggregateOutputType | null
   _max: TreatmentGroupMaxAggregateOutputType | null
@@ -185,44 +171,36 @@ export type TreatmentGroupWhereInput = {
   OR?: Prisma.TreatmentGroupWhereInput[]
   NOT?: Prisma.TreatmentGroupWhereInput | Prisma.TreatmentGroupWhereInput[]
   id?: Prisma.StringFilter<"TreatmentGroup"> | string
-  name?: Prisma.StringFilter<"TreatmentGroup"> | string
+  nameEn?: Prisma.StringFilter<"TreatmentGroup"> | string
   nameAr?: Prisma.StringNullableFilter<"TreatmentGroup"> | string | null
   color?: Prisma.StringFilter<"TreatmentGroup"> | string
-  createdAt?: Prisma.DateTimeFilter<"TreatmentGroup"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"TreatmentGroup"> | Date | string
   treatments?: Prisma.TreatmentListRelationFilter
 }
 
 export type TreatmentGroupOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
+  nameEn?: Prisma.SortOrder
   nameAr?: Prisma.SortOrderInput | Prisma.SortOrder
   color?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
   treatments?: Prisma.TreatmentOrderByRelationAggregateInput
 }
 
 export type TreatmentGroupWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  name?: string
+  nameEn?: string
   AND?: Prisma.TreatmentGroupWhereInput | Prisma.TreatmentGroupWhereInput[]
   OR?: Prisma.TreatmentGroupWhereInput[]
   NOT?: Prisma.TreatmentGroupWhereInput | Prisma.TreatmentGroupWhereInput[]
   nameAr?: Prisma.StringNullableFilter<"TreatmentGroup"> | string | null
   color?: Prisma.StringFilter<"TreatmentGroup"> | string
-  createdAt?: Prisma.DateTimeFilter<"TreatmentGroup"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"TreatmentGroup"> | Date | string
   treatments?: Prisma.TreatmentListRelationFilter
-}, "id" | "name">
+}, "id" | "nameEn">
 
 export type TreatmentGroupOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
+  nameEn?: Prisma.SortOrder
   nameAr?: Prisma.SortOrderInput | Prisma.SortOrder
   color?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
   _count?: Prisma.TreatmentGroupCountOrderByAggregateInput
   _max?: Prisma.TreatmentGroupMaxOrderByAggregateInput
   _min?: Prisma.TreatmentGroupMinOrderByAggregateInput
@@ -233,105 +211,83 @@ export type TreatmentGroupScalarWhereWithAggregatesInput = {
   OR?: Prisma.TreatmentGroupScalarWhereWithAggregatesInput[]
   NOT?: Prisma.TreatmentGroupScalarWhereWithAggregatesInput | Prisma.TreatmentGroupScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"TreatmentGroup"> | string
-  name?: Prisma.StringWithAggregatesFilter<"TreatmentGroup"> | string
+  nameEn?: Prisma.StringWithAggregatesFilter<"TreatmentGroup"> | string
   nameAr?: Prisma.StringNullableWithAggregatesFilter<"TreatmentGroup"> | string | null
   color?: Prisma.StringWithAggregatesFilter<"TreatmentGroup"> | string
-  createdAt?: Prisma.DateTimeWithAggregatesFilter<"TreatmentGroup"> | Date | string
-  updatedAt?: Prisma.DateTimeWithAggregatesFilter<"TreatmentGroup"> | Date | string
 }
 
 export type TreatmentGroupCreateInput = {
   id?: string
-  name: string
+  nameEn: string
   nameAr?: string | null
   color: string
-  createdAt?: Date | string
-  updatedAt?: Date | string
   treatments?: Prisma.TreatmentCreateNestedManyWithoutGroupInput
 }
 
 export type TreatmentGroupUncheckedCreateInput = {
   id?: string
-  name: string
+  nameEn: string
   nameAr?: string | null
   color: string
-  createdAt?: Date | string
-  updatedAt?: Date | string
   treatments?: Prisma.TreatmentUncheckedCreateNestedManyWithoutGroupInput
 }
 
 export type TreatmentGroupUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
+  nameEn?: Prisma.StringFieldUpdateOperationsInput | string
   nameAr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   color?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   treatments?: Prisma.TreatmentUpdateManyWithoutGroupNestedInput
 }
 
 export type TreatmentGroupUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
+  nameEn?: Prisma.StringFieldUpdateOperationsInput | string
   nameAr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   color?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   treatments?: Prisma.TreatmentUncheckedUpdateManyWithoutGroupNestedInput
 }
 
 export type TreatmentGroupCreateManyInput = {
   id?: string
-  name: string
+  nameEn: string
   nameAr?: string | null
   color: string
-  createdAt?: Date | string
-  updatedAt?: Date | string
 }
 
 export type TreatmentGroupUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
+  nameEn?: Prisma.StringFieldUpdateOperationsInput | string
   nameAr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   color?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TreatmentGroupUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
+  nameEn?: Prisma.StringFieldUpdateOperationsInput | string
   nameAr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   color?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TreatmentGroupCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
+  nameEn?: Prisma.SortOrder
   nameAr?: Prisma.SortOrder
   color?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
 }
 
 export type TreatmentGroupMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
+  nameEn?: Prisma.SortOrder
   nameAr?: Prisma.SortOrder
   color?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
 }
 
 export type TreatmentGroupMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
+  nameEn?: Prisma.SortOrder
   nameAr?: Prisma.SortOrder
   color?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
 }
 
 export type TreatmentGroupScalarRelationFilter = {
@@ -355,20 +311,16 @@ export type TreatmentGroupUpdateOneRequiredWithoutTreatmentsNestedInput = {
 
 export type TreatmentGroupCreateWithoutTreatmentsInput = {
   id?: string
-  name: string
+  nameEn: string
   nameAr?: string | null
   color: string
-  createdAt?: Date | string
-  updatedAt?: Date | string
 }
 
 export type TreatmentGroupUncheckedCreateWithoutTreatmentsInput = {
   id?: string
-  name: string
+  nameEn: string
   nameAr?: string | null
   color: string
-  createdAt?: Date | string
-  updatedAt?: Date | string
 }
 
 export type TreatmentGroupCreateOrConnectWithoutTreatmentsInput = {
@@ -389,20 +341,16 @@ export type TreatmentGroupUpdateToOneWithWhereWithoutTreatmentsInput = {
 
 export type TreatmentGroupUpdateWithoutTreatmentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
+  nameEn?: Prisma.StringFieldUpdateOperationsInput | string
   nameAr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   color?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TreatmentGroupUncheckedUpdateWithoutTreatmentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
+  nameEn?: Prisma.StringFieldUpdateOperationsInput | string
   nameAr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   color?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -438,43 +386,35 @@ export type TreatmentGroupCountOutputTypeCountTreatmentsArgs<ExtArgs extends run
 
 export type TreatmentGroupSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  name?: boolean
+  nameEn?: boolean
   nameAr?: boolean
   color?: boolean
-  createdAt?: boolean
-  updatedAt?: boolean
   treatments?: boolean | Prisma.TreatmentGroup$treatmentsArgs<ExtArgs>
   _count?: boolean | Prisma.TreatmentGroupCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["treatmentGroup"]>
 
 export type TreatmentGroupSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  name?: boolean
+  nameEn?: boolean
   nameAr?: boolean
   color?: boolean
-  createdAt?: boolean
-  updatedAt?: boolean
 }, ExtArgs["result"]["treatmentGroup"]>
 
 export type TreatmentGroupSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  name?: boolean
+  nameEn?: boolean
   nameAr?: boolean
   color?: boolean
-  createdAt?: boolean
-  updatedAt?: boolean
 }, ExtArgs["result"]["treatmentGroup"]>
 
 export type TreatmentGroupSelectScalar = {
   id?: boolean
-  name?: boolean
+  nameEn?: boolean
   nameAr?: boolean
   color?: boolean
-  createdAt?: boolean
-  updatedAt?: boolean
 }
 
-export type TreatmentGroupOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "nameAr" | "color" | "createdAt" | "updatedAt", ExtArgs["result"]["treatmentGroup"]>
+export type TreatmentGroupOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nameEn" | "nameAr" | "color", ExtArgs["result"]["treatmentGroup"]>
 export type TreatmentGroupInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   treatments?: boolean | Prisma.TreatmentGroup$treatmentsArgs<ExtArgs>
   _count?: boolean | Prisma.TreatmentGroupCountOutputTypeDefaultArgs<ExtArgs>
@@ -489,11 +429,9 @@ export type $TreatmentGroupPayload<ExtArgs extends runtime.Types.Extensions.Inte
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
-    name: string
+    nameEn: string
     nameAr: string | null
     color: string
-    createdAt: Date
-    updatedAt: Date
   }, ExtArgs["result"]["treatmentGroup"]>
   composites: {}
 }
@@ -919,11 +857,9 @@ export interface Prisma__TreatmentGroupClient<T, Null = never, ExtArgs extends r
  */
 export interface TreatmentGroupFieldRefs {
   readonly id: Prisma.FieldRef<"TreatmentGroup", 'String'>
-  readonly name: Prisma.FieldRef<"TreatmentGroup", 'String'>
+  readonly nameEn: Prisma.FieldRef<"TreatmentGroup", 'String'>
   readonly nameAr: Prisma.FieldRef<"TreatmentGroup", 'String'>
   readonly color: Prisma.FieldRef<"TreatmentGroup", 'String'>
-  readonly createdAt: Prisma.FieldRef<"TreatmentGroup", 'DateTime'>
-  readonly updatedAt: Prisma.FieldRef<"TreatmentGroup", 'DateTime'>
 }
     
 

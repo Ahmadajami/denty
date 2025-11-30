@@ -51,6 +51,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import * as Accordion from '$lib/components/ui/accordion/index.js';
+	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import SuperDebug from 'sveltekit-superforms';
 
 	import AddPatient from '$lib/shared/AddPatient.svelte';
@@ -67,26 +68,24 @@
 
 	const STEPS = [zod4(reportStep0), zod4(reportStep1), zod4(reportLastStep)];
 
-	
-const form = superForm(data.form, {
-    dataType: 'json',
-    taintedMessage: true,
-    
-    onSubmit: async ({ cancel }) => {
-        if (currentStep === STEPS.length) return;
-        cancel();
-        const result = await form.validateForm({ update: true });
-        if (result.valid) currentStep++;
-    },
+	const form = superForm(data.form, {
+		dataType: 'json',
+		taintedMessage: true,
 
-    // Add this block here
-    async onUpdated({ form }) {
-        if (form.valid) {
-            currentStep = 1;
-        }
-    }
-});
+		onSubmit: async ({ cancel }) => {
+			if (currentStep === STEPS.length) return;
+			else cancel();
+			const result = await form.validateForm({ update: true });
+			if (result.valid) currentStep++;
+		},
+		async onUpdated({ form }) {
+			if (form.valid) {
+				currentStep = 1;
 
+				console.log('currentStep must Change');
+			}
+		}
+	});
 
 	const { form: formData, enhance, delayed } = form;
 
@@ -177,6 +176,7 @@ const form = superForm(data.form, {
 			.map((s) => {
 				const meta = registry.get(s.treatmentId);
 				return {
+					id: `${s.toothNumber}-${s.treatmentId}`,
 					tooth: s.toothNumber,
 					treatment: meta ? resolveName(meta.treatment) : 'Unknown',
 					group: meta ? resolveName(meta.group) : 'General',
@@ -284,6 +284,29 @@ const form = superForm(data.form, {
 	</button>
 {/snippet}
 
+{#snippet stepOne()}
+	<section
+		class="flex min-h-[60vh] w-full animate-in items-center justify-center p-4 fade-in slide-in-from-bottom-4"
+	>
+		<PatientInfo
+			{form}
+			{formData}
+			bind:addPatientDialog
+			bind:query
+			onValue={(v) => {
+				query = v;
+				$formData.phone = query;
+			}}
+		>
+			{#snippet submit()}
+				<Button type="submit" disabled={!$formData.phone} class="w-full">
+					Next Step
+					<ArrowRight class="ml-2 h-4 w-4" />
+				</Button>
+			{/snippet}
+		</PatientInfo>
+	</section>
+{/snippet}
 {#snippet stepTwo()}
 	<div
 		class="flex h-full w-full animate-in flex-col gap-6 p-4 fade-in slide-in-from-bottom-4 md:p-6"
@@ -292,7 +315,7 @@ const form = superForm(data.form, {
 			<!-- Left: Tooth Chart (Sticky) -->
 			<div class="lg:col-span-5 xl:col-span-4">
 				<Card.Root class="h-min overflow-hidden border-2 lg:sticky lg:top-4">
-					<Card.Header class=" pb-3">
+					<Card.Header class="pb-3">
 						<div class="flex items-center justify-between">
 							<Card.Title class="text-lg">Dental Chart</Card.Title>
 							<div class="flex items-center gap-2 text-xs text-muted-foreground">
@@ -301,7 +324,9 @@ const form = superForm(data.form, {
 							</div>
 						</div>
 					</Card.Header>
-					<Card.Content class="flex flex-1 items-center justify-center overflow-y-auto p-2 py-6">
+					<Card.Content
+						class="flex flex-1 flex-col items-center justify-center overflow-y-auto p-2 py-6"
+					>
 						<div class="scale-90 transition-transform md:scale-100">
 							<Tooth
 								markedTeeth={toothColors}
@@ -488,30 +513,6 @@ const form = superForm(data.form, {
 	</div>
 {/snippet}
 
-{#snippet stepOne()}
-	<section
-		class="flex min-h-[60vh] w-full animate-in items-center justify-center p-4 fade-in slide-in-from-bottom-4"
-	>
-		<PatientInfo
-			{form}
-			{formData}
-			bind:addPatientDialog
-			bind:query
-			onValue={(v) => {
-				query = v;
-				$formData.phone = query;
-			}}
-		>
-			{#snippet submit()}
-				<Button type="submit" disabled={!$formData.phone} class="w-full">
-					Next Step
-					<ArrowRight class="ml-2 h-4 w-4" />
-				</Button>
-			{/snippet}
-		</PatientInfo>
-	</section>
-{/snippet}
-
 {#snippet stepThree()}
 	<section
 		class="mx-auto flex h-full w-full max-w-4xl animate-in flex-col justify-center gap-6 p-4 fade-in slide-in-from-bottom-4 md:p-8"
@@ -575,7 +576,7 @@ const form = superForm(data.form, {
 							</div>
 						{:else}
 							<div class="divide-y">
-								{#each reviewData as item (item.tooth)}
+								{#each reviewData as item (item.id)}
 									<div
 										class="flex items-center justify-between p-3.5 transition-colors hover:bg-muted/30"
 									>
@@ -643,7 +644,7 @@ const form = superForm(data.form, {
 	action="/dashboard"
 >
 	{#snippet loader()}
-		<Loader class="animate-spin" />
+		<Loader class="animate-spin text-primary" />
 	{/snippet}
 </AddPatient>
 

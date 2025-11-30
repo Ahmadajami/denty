@@ -1,14 +1,10 @@
 import { m } from '$lib/paraglide/messages';
-import { z } from 'zod/v4';
-/*
-Login Schema
-*/
-export const authschema = z.object({
-	PhoneNumber: z.string().min(10, m.phonenumber_error()),
-	password: z.string().min(8, m.password_error())
-});
+import { z } from 'zod/v4'; // Note: SvelteKit usually uses standard zod, not zod/v4 unless specific adapter requires it
 
-// Define the enum for specialization.
+/* -------------------------------------------------
+   CONSTANTS & ENUMS
+   -------------------------------------------------
+*/
 export const SPECIALIZATION_TYPES = [
 	'Empty',
 	'General Dentist',
@@ -21,95 +17,73 @@ export const SPECIALIZATION_TYPES = [
 	'Other'
 ] as const;
 
-// Zod Enum schema for specialization.
+// Helper for specialization validation
 const SpecializationEnum = z
 	.enum(SPECIALIZATION_TYPES)
 	.default('Empty')
 	.refine((val) => val !== 'Empty', m.specialization_wrong());
-// --- Reusable base schema ---
-const personBaseSchema = z
-	.object({
-		name_ar: z.string().trim().min(2, m.doctor_error()),
-		name: z.string().trim().min(2, m.doctor_error()),
-		phone: z.string().min(10, m.phonenumber_error()),
-		specialization: SpecializationEnum,
-		password: z.string().min(8, m.password_error()).max(100, m.password_error_second()),
-		password_confirmation: z.string()
+
+/* -------------------------------------------------
+   BASE SCHEMA
+   -------------------------------------------------
+*/
+const personBaseSchema = z.object({
+	// Map to Prisma: nameAr
+	name_ar: z.string().trim().min(2, m.doctor_error()),
+	// Map to Prisma: nameEn
+	name: z.string().trim().min(2, m.doctor_error()),
+	// Map to Prisma: phoneNumber
+	phone: z.string().min(10, m.phonenumber_error()),
+	// Map to Prisma: specialization
+	specialization: SpecializationEnum,
+	// Map to Prisma: passwordHash
+	password: z.string().min(8, m.password_error()).max(100, m.password_error_second()),
+	password_confirmation: z.string()
+});
+
+/* -------------------------------------------------
+   CLINIC SCHEMA
+   -------------------------------------------------
+*/
+export const clinicSchema = personBaseSchema
+	.extend({
+		// Map to Prisma: Clinic.name
+		clinicName: z.string().trim().min(2, m.center_error())
 	})
-	.check((ctx) => {
-		if (ctx.value.password !== ctx.value.password_confirmation) {
-			ctx.issues.push({
-				code: 'custom',
-				message: m.confirm_password_error(),
-				path: ['password_confirmation'],
-				input: ctx.value
-			});
-		}
+	.refine((data) => data.password === data.password_confirmation, {
+		message: m.confirm_password_error(),
+		path: ['password_confirmation']
 	});
 
-// --- Doctor Schema (only uses base schema) ---
-const doctorSchema = personBaseSchema;
+export type ClinicSchema = typeof clinicSchema;
 
-// --- Medical Schema ---
+/* -------------------------------------------------
+   MEDICAL CENTER SCHEMA (Preserved structure)
+   -------------------------------------------------
+*/
+// Re-define doctor schema based on base
+const doctorSchema = personBaseSchema.refine(
+	(data) => data.password === data.password_confirmation,
+	{
+		message: m.confirm_password_error(),
+		path: ['password_confirmation']
+	}
+);
+
 export const medicalSchema = z
 	.object({
 		name_ar: z.string().trim().min(2, m.doctor_error()),
 		name: z.string().trim().min(2, m.doctor_error()),
-
 		center_name: z.string().trim().min(2, m.center_error()),
-
-		center_name_ar: z.string().trim().min(2, m.center_error()),
+		center_name_ar: z.string().trim().min(2, m.center_error()), // Note: Prisma doesn't have center_name_ar in Facility? Check if needed.
 		specialization: SpecializationEnum,
 		phone: z.string().min(10, m.phonenumber_error()),
 		password: z.string().min(8, m.password_error()).max(100, m.password_error_second()),
 		password_confirmation: z.string(),
-
-		doctors: z
-			.array(doctorSchema)
-			.min(2, m.center_doctor_count_error())
-			.default([
-				{
-					name_ar: '',
-					name: '',
-					phone: '',
-					specialization: 'Empty',
-					password: '',
-					password_confirmation: ''
-				},
-				{
-					name_ar: '',
-					name: '',
-					phone: '',
-					specialization: 'Empty',
-					password: '',
-					password_confirmation: ''
-				}
-			])
+		doctors: z.array(doctorSchema).min(2, m.center_doctor_count_error())
 	})
-	.check((ctx) => {
-		if (ctx.value.password !== ctx.value.password_confirmation) {
-			ctx.issues.push({
-				code: 'custom',
-				message: m.confirm_password_error(),
-				path: ['password_confirmation'],
-				input: ctx.value
-			});
-		}
+	.refine((data) => data.password === data.password_confirmation, {
+		message: m.confirm_password_error(),
+		path: ['password_confirmation']
 	});
-
-// --- Clinic Schema ---
-export const clinicSchema = personBaseSchema
-	.safeExtend({
-		clinicName: z.string().trim().min(2, m.center_error()),
-		password: z.string().min(8, m.gross_fancy_worm_flop()).max(100, m.password_error_second()),
-		password_confirmation: z.string()
-	})
-	.superRefine(({ password, password_confirmation }, ctx) => {
-		if (password !== password_confirmation) {
-			ctx.addIssue({
-				code: 'custom',
-				message: m.confirm_password_error(),
-				path: ['password_confirmation']
-			});
-		}
-	});
+export type MedicalSchema = typeof medicalSchema;

@@ -36,32 +36,26 @@ export type TreatmentSumAggregateOutputType = {
 
 export type TreatmentMinAggregateOutputType = {
   id: string | null
-  name: string | null
+  nameEn: string | null
   nameAr: string | null
   groupId: string | null
   basePrice: runtime.Decimal | null
-  createdAt: Date | null
-  updatedAt: Date | null
 }
 
 export type TreatmentMaxAggregateOutputType = {
   id: string | null
-  name: string | null
+  nameEn: string | null
   nameAr: string | null
   groupId: string | null
   basePrice: runtime.Decimal | null
-  createdAt: Date | null
-  updatedAt: Date | null
 }
 
 export type TreatmentCountAggregateOutputType = {
   id: number
-  name: number
+  nameEn: number
   nameAr: number
   groupId: number
   basePrice: number
-  createdAt: number
-  updatedAt: number
   _all: number
 }
 
@@ -76,32 +70,26 @@ export type TreatmentSumAggregateInputType = {
 
 export type TreatmentMinAggregateInputType = {
   id?: true
-  name?: true
+  nameEn?: true
   nameAr?: true
   groupId?: true
   basePrice?: true
-  createdAt?: true
-  updatedAt?: true
 }
 
 export type TreatmentMaxAggregateInputType = {
   id?: true
-  name?: true
+  nameEn?: true
   nameAr?: true
   groupId?: true
   basePrice?: true
-  createdAt?: true
-  updatedAt?: true
 }
 
 export type TreatmentCountAggregateInputType = {
   id?: true
-  name?: true
+  nameEn?: true
   nameAr?: true
   groupId?: true
   basePrice?: true
-  createdAt?: true
-  updatedAt?: true
   _all?: true
 }
 
@@ -193,12 +181,10 @@ export type TreatmentGroupByArgs<ExtArgs extends runtime.Types.Extensions.Intern
 
 export type TreatmentGroupByOutputType = {
   id: string
-  name: string
+  nameEn: string
   nameAr: string | null
   groupId: string
   basePrice: runtime.Decimal | null
-  createdAt: Date
-  updatedAt: Date
   _count: TreatmentCountAggregateOutputType | null
   _avg: TreatmentAvgAggregateOutputType | null
   _sum: TreatmentSumAggregateOutputType | null
@@ -226,24 +212,22 @@ export type TreatmentWhereInput = {
   OR?: Prisma.TreatmentWhereInput[]
   NOT?: Prisma.TreatmentWhereInput | Prisma.TreatmentWhereInput[]
   id?: Prisma.StringFilter<"Treatment"> | string
-  name?: Prisma.StringFilter<"Treatment"> | string
+  nameEn?: Prisma.StringFilter<"Treatment"> | string
   nameAr?: Prisma.StringNullableFilter<"Treatment"> | string | null
   groupId?: Prisma.StringFilter<"Treatment"> | string
   basePrice?: Prisma.DecimalNullableFilter<"Treatment"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  createdAt?: Prisma.DateTimeFilter<"Treatment"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"Treatment"> | Date | string
   group?: Prisma.XOR<Prisma.TreatmentGroupScalarRelationFilter, Prisma.TreatmentGroupWhereInput>
+  facilityPrices?: Prisma.FacilityPriceListRelationFilter
 }
 
 export type TreatmentOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
+  nameEn?: Prisma.SortOrder
   nameAr?: Prisma.SortOrderInput | Prisma.SortOrder
   groupId?: Prisma.SortOrder
   basePrice?: Prisma.SortOrderInput | Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
   group?: Prisma.TreatmentGroupOrderByWithRelationInput
+  facilityPrices?: Prisma.FacilityPriceOrderByRelationAggregateInput
 }
 
 export type TreatmentWhereUniqueInput = Prisma.AtLeast<{
@@ -251,23 +235,20 @@ export type TreatmentWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.TreatmentWhereInput | Prisma.TreatmentWhereInput[]
   OR?: Prisma.TreatmentWhereInput[]
   NOT?: Prisma.TreatmentWhereInput | Prisma.TreatmentWhereInput[]
-  name?: Prisma.StringFilter<"Treatment"> | string
+  nameEn?: Prisma.StringFilter<"Treatment"> | string
   nameAr?: Prisma.StringNullableFilter<"Treatment"> | string | null
   groupId?: Prisma.StringFilter<"Treatment"> | string
   basePrice?: Prisma.DecimalNullableFilter<"Treatment"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  createdAt?: Prisma.DateTimeFilter<"Treatment"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"Treatment"> | Date | string
   group?: Prisma.XOR<Prisma.TreatmentGroupScalarRelationFilter, Prisma.TreatmentGroupWhereInput>
+  facilityPrices?: Prisma.FacilityPriceListRelationFilter
 }, "id">
 
 export type TreatmentOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
+  nameEn?: Prisma.SortOrder
   nameAr?: Prisma.SortOrderInput | Prisma.SortOrder
   groupId?: Prisma.SortOrder
   basePrice?: Prisma.SortOrderInput | Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
   _count?: Prisma.TreatmentCountOrderByAggregateInput
   _avg?: Prisma.TreatmentAvgOrderByAggregateInput
   _max?: Prisma.TreatmentMaxOrderByAggregateInput
@@ -280,81 +261,69 @@ export type TreatmentScalarWhereWithAggregatesInput = {
   OR?: Prisma.TreatmentScalarWhereWithAggregatesInput[]
   NOT?: Prisma.TreatmentScalarWhereWithAggregatesInput | Prisma.TreatmentScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Treatment"> | string
-  name?: Prisma.StringWithAggregatesFilter<"Treatment"> | string
+  nameEn?: Prisma.StringWithAggregatesFilter<"Treatment"> | string
   nameAr?: Prisma.StringNullableWithAggregatesFilter<"Treatment"> | string | null
   groupId?: Prisma.StringWithAggregatesFilter<"Treatment"> | string
   basePrice?: Prisma.DecimalNullableWithAggregatesFilter<"Treatment"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  createdAt?: Prisma.DateTimeWithAggregatesFilter<"Treatment"> | Date | string
-  updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Treatment"> | Date | string
 }
 
 export type TreatmentCreateInput = {
   id?: string
-  name: string
+  nameEn: string
   nameAr?: string | null
   basePrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
   group: Prisma.TreatmentGroupCreateNestedOneWithoutTreatmentsInput
+  facilityPrices?: Prisma.FacilityPriceCreateNestedManyWithoutTreatmentInput
 }
 
 export type TreatmentUncheckedCreateInput = {
   id?: string
-  name: string
+  nameEn: string
   nameAr?: string | null
   groupId: string
   basePrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  facilityPrices?: Prisma.FacilityPriceUncheckedCreateNestedManyWithoutTreatmentInput
 }
 
 export type TreatmentUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
+  nameEn?: Prisma.StringFieldUpdateOperationsInput | string
   nameAr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   basePrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   group?: Prisma.TreatmentGroupUpdateOneRequiredWithoutTreatmentsNestedInput
+  facilityPrices?: Prisma.FacilityPriceUpdateManyWithoutTreatmentNestedInput
 }
 
 export type TreatmentUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
+  nameEn?: Prisma.StringFieldUpdateOperationsInput | string
   nameAr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
   basePrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  facilityPrices?: Prisma.FacilityPriceUncheckedUpdateManyWithoutTreatmentNestedInput
 }
 
 export type TreatmentCreateManyInput = {
   id?: string
-  name: string
+  nameEn: string
   nameAr?: string | null
   groupId: string
   basePrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
 }
 
 export type TreatmentUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
+  nameEn?: Prisma.StringFieldUpdateOperationsInput | string
   nameAr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   basePrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TreatmentUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
+  nameEn?: Prisma.StringFieldUpdateOperationsInput | string
   nameAr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
   basePrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TreatmentListRelationFilter = {
@@ -369,12 +338,10 @@ export type TreatmentOrderByRelationAggregateInput = {
 
 export type TreatmentCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
+  nameEn?: Prisma.SortOrder
   nameAr?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
   basePrice?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
 }
 
 export type TreatmentAvgOrderByAggregateInput = {
@@ -383,26 +350,27 @@ export type TreatmentAvgOrderByAggregateInput = {
 
 export type TreatmentMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
+  nameEn?: Prisma.SortOrder
   nameAr?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
   basePrice?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
 }
 
 export type TreatmentMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
+  nameEn?: Prisma.SortOrder
   nameAr?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
   basePrice?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
 }
 
 export type TreatmentSumOrderByAggregateInput = {
   basePrice?: Prisma.SortOrder
+}
+
+export type TreatmentScalarRelationFilter = {
+  is?: Prisma.TreatmentWhereInput
+  isNot?: Prisma.TreatmentWhereInput
 }
 
 export type TreatmentCreateNestedManyWithoutGroupInput = {
@@ -455,22 +423,34 @@ export type NullableDecimalFieldUpdateOperationsInput = {
   divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
+export type TreatmentCreateNestedOneWithoutFacilityPricesInput = {
+  create?: Prisma.XOR<Prisma.TreatmentCreateWithoutFacilityPricesInput, Prisma.TreatmentUncheckedCreateWithoutFacilityPricesInput>
+  connectOrCreate?: Prisma.TreatmentCreateOrConnectWithoutFacilityPricesInput
+  connect?: Prisma.TreatmentWhereUniqueInput
+}
+
+export type TreatmentUpdateOneRequiredWithoutFacilityPricesNestedInput = {
+  create?: Prisma.XOR<Prisma.TreatmentCreateWithoutFacilityPricesInput, Prisma.TreatmentUncheckedCreateWithoutFacilityPricesInput>
+  connectOrCreate?: Prisma.TreatmentCreateOrConnectWithoutFacilityPricesInput
+  upsert?: Prisma.TreatmentUpsertWithoutFacilityPricesInput
+  connect?: Prisma.TreatmentWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TreatmentUpdateToOneWithWhereWithoutFacilityPricesInput, Prisma.TreatmentUpdateWithoutFacilityPricesInput>, Prisma.TreatmentUncheckedUpdateWithoutFacilityPricesInput>
+}
+
 export type TreatmentCreateWithoutGroupInput = {
   id?: string
-  name: string
+  nameEn: string
   nameAr?: string | null
   basePrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  facilityPrices?: Prisma.FacilityPriceCreateNestedManyWithoutTreatmentInput
 }
 
 export type TreatmentUncheckedCreateWithoutGroupInput = {
   id?: string
-  name: string
+  nameEn: string
   nameAr?: string | null
   basePrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  facilityPrices?: Prisma.FacilityPriceUncheckedCreateNestedManyWithoutTreatmentInput
 }
 
 export type TreatmentCreateOrConnectWithoutGroupInput = {
@@ -504,98 +484,163 @@ export type TreatmentScalarWhereInput = {
   OR?: Prisma.TreatmentScalarWhereInput[]
   NOT?: Prisma.TreatmentScalarWhereInput | Prisma.TreatmentScalarWhereInput[]
   id?: Prisma.StringFilter<"Treatment"> | string
-  name?: Prisma.StringFilter<"Treatment"> | string
+  nameEn?: Prisma.StringFilter<"Treatment"> | string
   nameAr?: Prisma.StringNullableFilter<"Treatment"> | string | null
   groupId?: Prisma.StringFilter<"Treatment"> | string
   basePrice?: Prisma.DecimalNullableFilter<"Treatment"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  createdAt?: Prisma.DateTimeFilter<"Treatment"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"Treatment"> | Date | string
+}
+
+export type TreatmentCreateWithoutFacilityPricesInput = {
+  id?: string
+  nameEn: string
+  nameAr?: string | null
+  basePrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  group: Prisma.TreatmentGroupCreateNestedOneWithoutTreatmentsInput
+}
+
+export type TreatmentUncheckedCreateWithoutFacilityPricesInput = {
+  id?: string
+  nameEn: string
+  nameAr?: string | null
+  groupId: string
+  basePrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+}
+
+export type TreatmentCreateOrConnectWithoutFacilityPricesInput = {
+  where: Prisma.TreatmentWhereUniqueInput
+  create: Prisma.XOR<Prisma.TreatmentCreateWithoutFacilityPricesInput, Prisma.TreatmentUncheckedCreateWithoutFacilityPricesInput>
+}
+
+export type TreatmentUpsertWithoutFacilityPricesInput = {
+  update: Prisma.XOR<Prisma.TreatmentUpdateWithoutFacilityPricesInput, Prisma.TreatmentUncheckedUpdateWithoutFacilityPricesInput>
+  create: Prisma.XOR<Prisma.TreatmentCreateWithoutFacilityPricesInput, Prisma.TreatmentUncheckedCreateWithoutFacilityPricesInput>
+  where?: Prisma.TreatmentWhereInput
+}
+
+export type TreatmentUpdateToOneWithWhereWithoutFacilityPricesInput = {
+  where?: Prisma.TreatmentWhereInput
+  data: Prisma.XOR<Prisma.TreatmentUpdateWithoutFacilityPricesInput, Prisma.TreatmentUncheckedUpdateWithoutFacilityPricesInput>
+}
+
+export type TreatmentUpdateWithoutFacilityPricesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nameEn?: Prisma.StringFieldUpdateOperationsInput | string
+  nameAr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  basePrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  group?: Prisma.TreatmentGroupUpdateOneRequiredWithoutTreatmentsNestedInput
+}
+
+export type TreatmentUncheckedUpdateWithoutFacilityPricesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nameEn?: Prisma.StringFieldUpdateOperationsInput | string
+  nameAr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  basePrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
 }
 
 export type TreatmentCreateManyGroupInput = {
   id?: string
-  name: string
+  nameEn: string
   nameAr?: string | null
   basePrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
 }
 
 export type TreatmentUpdateWithoutGroupInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
+  nameEn?: Prisma.StringFieldUpdateOperationsInput | string
   nameAr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   basePrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  facilityPrices?: Prisma.FacilityPriceUpdateManyWithoutTreatmentNestedInput
 }
 
 export type TreatmentUncheckedUpdateWithoutGroupInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
+  nameEn?: Prisma.StringFieldUpdateOperationsInput | string
   nameAr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   basePrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  facilityPrices?: Prisma.FacilityPriceUncheckedUpdateManyWithoutTreatmentNestedInput
 }
 
 export type TreatmentUncheckedUpdateManyWithoutGroupInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
+  nameEn?: Prisma.StringFieldUpdateOperationsInput | string
   nameAr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   basePrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+
+/**
+ * Count Type TreatmentCountOutputType
+ */
+
+export type TreatmentCountOutputType = {
+  facilityPrices: number
+}
+
+export type TreatmentCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  facilityPrices?: boolean | TreatmentCountOutputTypeCountFacilityPricesArgs
+}
+
+/**
+ * TreatmentCountOutputType without action
+ */
+export type TreatmentCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the TreatmentCountOutputType
+   */
+  select?: Prisma.TreatmentCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * TreatmentCountOutputType without action
+ */
+export type TreatmentCountOutputTypeCountFacilityPricesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FacilityPriceWhereInput
+}
 
 
 export type TreatmentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  name?: boolean
+  nameEn?: boolean
   nameAr?: boolean
   groupId?: boolean
   basePrice?: boolean
-  createdAt?: boolean
-  updatedAt?: boolean
   group?: boolean | Prisma.TreatmentGroupDefaultArgs<ExtArgs>
+  facilityPrices?: boolean | Prisma.Treatment$facilityPricesArgs<ExtArgs>
+  _count?: boolean | Prisma.TreatmentCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["treatment"]>
 
 export type TreatmentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  name?: boolean
+  nameEn?: boolean
   nameAr?: boolean
   groupId?: boolean
   basePrice?: boolean
-  createdAt?: boolean
-  updatedAt?: boolean
   group?: boolean | Prisma.TreatmentGroupDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["treatment"]>
 
 export type TreatmentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  name?: boolean
+  nameEn?: boolean
   nameAr?: boolean
   groupId?: boolean
   basePrice?: boolean
-  createdAt?: boolean
-  updatedAt?: boolean
   group?: boolean | Prisma.TreatmentGroupDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["treatment"]>
 
 export type TreatmentSelectScalar = {
   id?: boolean
-  name?: boolean
+  nameEn?: boolean
   nameAr?: boolean
   groupId?: boolean
   basePrice?: boolean
-  createdAt?: boolean
-  updatedAt?: boolean
 }
 
-export type TreatmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "nameAr" | "groupId" | "basePrice" | "createdAt" | "updatedAt", ExtArgs["result"]["treatment"]>
+export type TreatmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nameEn" | "nameAr" | "groupId" | "basePrice", ExtArgs["result"]["treatment"]>
 export type TreatmentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   group?: boolean | Prisma.TreatmentGroupDefaultArgs<ExtArgs>
+  facilityPrices?: boolean | Prisma.Treatment$facilityPricesArgs<ExtArgs>
+  _count?: boolean | Prisma.TreatmentCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TreatmentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   group?: boolean | Prisma.TreatmentGroupDefaultArgs<ExtArgs>
@@ -608,15 +653,14 @@ export type $TreatmentPayload<ExtArgs extends runtime.Types.Extensions.InternalA
   name: "Treatment"
   objects: {
     group: Prisma.$TreatmentGroupPayload<ExtArgs>
+    facilityPrices: Prisma.$FacilityPricePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
-    name: string
+    nameEn: string
     nameAr: string | null
     groupId: string
     basePrice: runtime.Decimal | null
-    createdAt: Date
-    updatedAt: Date
   }, ExtArgs["result"]["treatment"]>
   composites: {}
 }
@@ -1012,6 +1056,7 @@ readonly fields: TreatmentFieldRefs;
 export interface Prisma__TreatmentClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   group<T extends Prisma.TreatmentGroupDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TreatmentGroupDefaultArgs<ExtArgs>>): Prisma.Prisma__TreatmentGroupClient<runtime.Types.Result.GetResult<Prisma.$TreatmentGroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  facilityPrices<T extends Prisma.Treatment$facilityPricesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Treatment$facilityPricesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FacilityPricePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1042,12 +1087,10 @@ export interface Prisma__TreatmentClient<T, Null = never, ExtArgs extends runtim
  */
 export interface TreatmentFieldRefs {
   readonly id: Prisma.FieldRef<"Treatment", 'String'>
-  readonly name: Prisma.FieldRef<"Treatment", 'String'>
+  readonly nameEn: Prisma.FieldRef<"Treatment", 'String'>
   readonly nameAr: Prisma.FieldRef<"Treatment", 'String'>
   readonly groupId: Prisma.FieldRef<"Treatment", 'String'>
   readonly basePrice: Prisma.FieldRef<"Treatment", 'Decimal'>
-  readonly createdAt: Prisma.FieldRef<"Treatment", 'DateTime'>
-  readonly updatedAt: Prisma.FieldRef<"Treatment", 'DateTime'>
 }
     
 
@@ -1441,6 +1484,30 @@ export type TreatmentDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Int
    * Limit how many Treatments to delete.
    */
   limit?: number
+}
+
+/**
+ * Treatment.facilityPrices
+ */
+export type Treatment$facilityPricesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FacilityPrice
+   */
+  select?: Prisma.FacilityPriceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FacilityPrice
+   */
+  omit?: Prisma.FacilityPriceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FacilityPriceInclude<ExtArgs> | null
+  where?: Prisma.FacilityPriceWhereInput
+  orderBy?: Prisma.FacilityPriceOrderByWithRelationInput | Prisma.FacilityPriceOrderByWithRelationInput[]
+  cursor?: Prisma.FacilityPriceWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FacilityPriceScalarFieldEnum | Prisma.FacilityPriceScalarFieldEnum[]
 }
 
 /**

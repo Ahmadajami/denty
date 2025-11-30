@@ -19,9 +19,7 @@ export * as $Enums from './enums.ts'
 export * from './enums.ts';
 /**
  * Model User
- * =================================
- *    USER MODEL (Doctors + Owners)
- *    =================================
+ * 
  */
 export type User = Prisma.UserModel
 /**
@@ -31,23 +29,34 @@ export type User = Prisma.UserModel
 export type Clinic = Prisma.ClinicModel
 /**
  * Model MedicalCenter
- * ============================================
- *    MEDICAL CENTER (Multi-Doctor + Owner)
- *    ============================================
+ * 
  */
 export type MedicalCenter = Prisma.MedicalCenterModel
 /**
- * Model Role
- * ============================
- * ROLE (DEFINES USER ROLES(ADMIN, DOCTOR, ETC))
- * ============================
+ * Model ClinicMember
+ * 
  */
-export type Role = Prisma.RoleModel
+export type ClinicMember = Prisma.ClinicMemberModel
+/**
+ * Model MedicalCenterMember
+ * 
+ */
+export type MedicalCenterMember = Prisma.MedicalCenterMemberModel
 /**
  * Model Patient
  * 
  */
 export type Patient = Prisma.PatientModel
+/**
+ * Model PatientAccess
+ * 
+ */
+export type PatientAccess = Prisma.PatientAccessModel
+/**
+ * Model Appointment
+ * 
+ */
+export type Appointment = Prisma.AppointmentModel
 /**
  * Model TreatmentGroup
  * 
@@ -58,3 +67,8 @@ export type TreatmentGroup = Prisma.TreatmentGroupModel
  * 
  */
 export type Treatment = Prisma.TreatmentModel
+/**
+ * Model FacilityPrice
+ * 
+ */
+export type FacilityPrice = Prisma.FacilityPriceModel

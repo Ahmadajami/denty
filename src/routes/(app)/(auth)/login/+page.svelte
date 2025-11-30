@@ -12,7 +12,7 @@
 	import type { PageProps } from './$types';
 	import SuperDebug, { superForm } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
-	import { authschema } from '$lib/auth/schema';
+	import { authschema } from './schema.ts';
 	import { toast } from 'svelte-sonner';
 	import { m } from '$lib/paraglide/messages';
 	import { localizeHref } from '$lib/paraglide/runtime';

@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { superValidate, fail } from 'sveltekit-superforms';
+import { setDefaultResultOrder } from 'node:dns';
+setDefaultResultOrder('ipv4first');
+
+import { superValidate, fail, message } from 'sveltekit-superforms';
 import type { Actions, PageServerLoad } from './$types';
 import { reportLastStep } from '$lib/zod/session';
 import { zod4 } from 'sveltekit-superforms/adapters';
-import { redirect } from '@sveltejs/kit';
 import { crudPatientSchema } from '$lib/zod/patient';
 import nodemailer from 'nodemailer';
 import { DOPPIO_API_KEY, GMAILAPP } from '$env/static/private';
-import { localizeHref } from '$lib/paraglide/runtime.js';
 import { getAllTreatmentsGroups } from '$lib/server/treatment';
 import { db } from '$lib/server/prisma';
 import { initialTeethData, initToothstyle } from '$lib/shared/tooth/chartData';
@@ -49,9 +50,7 @@ function generateReportHtml(
 		.map((tooth, index) => {
 			const style = initToothstyle[index];
 			// Find ALL treatments for this tooth
-			const treatmentsForTooth = toothTreatments.filter(
-				(t) => t.toothNumber === Number(tooth.key)
-			);
+			const treatmentsForTooth = toothTreatments.filter((t) => t.toothNumber === Number(tooth.key));
 
 			// Determine color: use the color of the LAST added treatment
 			let fill = 'white'; // default
@@ -145,13 +144,60 @@ function generateReportHtml(
 }
 
 export const actions: Actions = {
-	new_session: async ({ request, fetch }) => {
+	new_session: async ({ request, fetch, locals }) => {
 		console.log('Server action called');
 		const form = await superValidate(request, zod4(reportLastStep));
 
 		if (!form.valid) return fail(400, { form });
 
+		const user = locals.user;
+		if (!user) return fail(401, { form });
+
+		// Resolve Context (Clinic/MedicalCenter)
+		let clinicId: string | null = null;
+		let medicalCenterId: string | null = null;
+
+		if (user.type === 'CLINIC_OWNER' && user.ownedClinic) {
+			clinicId = user.ownedClinic.id;
+		} else if (user.type === 'MEDICAL_CENTER_OWNER' && user.ownedMedicalCenter) {
+			medicalCenterId = user.ownedMedicalCenter.id;
+		} else if (user.type === 'MEDICAL_CENTER_DOCTOR' && user.medicalCenter) {
+			medicalCenterId = user.medicalCenter.id;
+		}
+
+		// Find Patient
+		const patient = await db.patient.findUnique({
+			where: { phoneNumber: form.data.phone }
+		});
+
+		if (!patient) {
+			return fail(400, { form, error: 'Patient not found' });
+		}
+
+		// Save to DB
+		try {
+			await db.treatmentSession.create({
+				data: {
+					patientId: patient.id,
+					doctorId: user.id,
+					clinicId,
+					medicalCenterId,
+					items: {
+						create: form.data.toothTreatments.map((t: any) => ({
+							treatmentId: t.treatmentId,
+							toothNumber: t.toothNumber
+						}))
+					}
+				}
+			});
+			console.log('✅ Session saved to DB');
+		} catch (e) {
+			console.error('DB Save Error', e);
+			return fail(500, { form, error: 'Database Error' });
+		}
+
 		console.log('Form is valid. Generating PDF via Doppio...');
+		let emailSent = false;
 
 		try {
 			// 1. Fetch Data Context
@@ -173,7 +219,6 @@ export const actions: Actions = {
 				throw new Error('DOPPIO_API_KEY is not configured.');
 			}
 
-			
 			const encodedHTML = Buffer.from(htmlContent, 'utf8').toString('base64');
 
 			const doppioRes = await fetch('https://api.doppio.sh/v1/render/pdf/direct', {
@@ -215,8 +260,8 @@ export const actions: Actions = {
 			const transporter = nodemailer.createTransport({
 				service: 'gmail',
 				auth: {
-					user: 'a.alajami963@gmail.com', 
-					pass: GMAILAPP 
+					user: 'a.alajami963@gmail.com',
+					pass: GMAILAPP
 				}
 			});
 
@@ -234,11 +279,12 @@ export const actions: Actions = {
 			});
 
 			console.log('✅ Email sent successfully');
+			emailSent = true;
 		} catch (error) {
 			console.error('❌ Error processing session:', error);
 			if (error instanceof Error) console.error(error.message);
 		}
 
-		redirect(301, localizeHref('/dashboard/session'));
+		return message(form, emailSent ? 'SUCCESS' : 'WARNING_EMAIL_FAILED');
 	}
 };

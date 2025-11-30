@@ -5,6 +5,5 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 		return;
 	}
 
-	console.log(locals.user.type);
 	return { user: locals.user };
 };

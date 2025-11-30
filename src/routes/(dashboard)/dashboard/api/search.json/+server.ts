@@ -12,5 +12,5 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 
 	const patients = await searchPatients(user, query);
 
-	return new Response(JSON.stringify(patients), { status: 200 });
+	return json(patients, { status: 200 });
 };

@@ -14,9 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace.ts"
 
 /**
  * Model MedicalCenter
- * ============================================
- *    MEDICAL CENTER (Multi-Doctor + Owner)
- *    ============================================
+ * 
  */
 export type MedicalCenterModel = runtime.Types.Result.DefaultSelection<Prisma.$MedicalCenterPayload>
 
@@ -29,7 +27,8 @@ export type AggregateMedicalCenter = {
 export type MedicalCenterMinAggregateOutputType = {
   id: string | null
   centerName: string | null
-  ownerId: string | null
+  status: $Enums.SubscriptionStatus | null
+  subscriptionEndsAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -37,7 +36,8 @@ export type MedicalCenterMinAggregateOutputType = {
 export type MedicalCenterMaxAggregateOutputType = {
   id: string | null
   centerName: string | null
-  ownerId: string | null
+  status: $Enums.SubscriptionStatus | null
+  subscriptionEndsAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -45,7 +45,8 @@ export type MedicalCenterMaxAggregateOutputType = {
 export type MedicalCenterCountAggregateOutputType = {
   id: number
   centerName: number
-  ownerId: number
+  status: number
+  subscriptionEndsAt: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -55,7 +56,8 @@ export type MedicalCenterCountAggregateOutputType = {
 export type MedicalCenterMinAggregateInputType = {
   id?: true
   centerName?: true
-  ownerId?: true
+  status?: true
+  subscriptionEndsAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -63,7 +65,8 @@ export type MedicalCenterMinAggregateInputType = {
 export type MedicalCenterMaxAggregateInputType = {
   id?: true
   centerName?: true
-  ownerId?: true
+  status?: true
+  subscriptionEndsAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -71,7 +74,8 @@ export type MedicalCenterMaxAggregateInputType = {
 export type MedicalCenterCountAggregateInputType = {
   id?: true
   centerName?: true
-  ownerId?: true
+  status?: true
+  subscriptionEndsAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -152,7 +156,8 @@ export type MedicalCenterGroupByArgs<ExtArgs extends runtime.Types.Extensions.In
 export type MedicalCenterGroupByOutputType = {
   id: string
   centerName: string
-  ownerId: string | null
+  status: $Enums.SubscriptionStatus
+  subscriptionEndsAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: MedicalCenterCountAggregateOutputType | null
@@ -181,43 +186,50 @@ export type MedicalCenterWhereInput = {
   NOT?: Prisma.MedicalCenterWhereInput | Prisma.MedicalCenterWhereInput[]
   id?: Prisma.StringFilter<"MedicalCenter"> | string
   centerName?: Prisma.StringFilter<"MedicalCenter"> | string
-  ownerId?: Prisma.StringNullableFilter<"MedicalCenter"> | string | null
+  status?: Prisma.EnumSubscriptionStatusFilter<"MedicalCenter"> | $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Prisma.DateTimeNullableFilter<"MedicalCenter"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"MedicalCenter"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MedicalCenter"> | Date | string
-  owner?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
-  doctors?: Prisma.UserListRelationFilter
+  members?: Prisma.MedicalCenterMemberListRelationFilter
   patients?: Prisma.PatientListRelationFilter
+  prices?: Prisma.FacilityPriceListRelationFilter
+  appointments?: Prisma.AppointmentListRelationFilter
 }
 
 export type MedicalCenterOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   centerName?: Prisma.SortOrder
-  ownerId?: Prisma.SortOrderInput | Prisma.SortOrder
+  status?: Prisma.SortOrder
+  subscriptionEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  owner?: Prisma.UserOrderByWithRelationInput
-  doctors?: Prisma.UserOrderByRelationAggregateInput
+  members?: Prisma.MedicalCenterMemberOrderByRelationAggregateInput
   patients?: Prisma.PatientOrderByRelationAggregateInput
+  prices?: Prisma.FacilityPriceOrderByRelationAggregateInput
+  appointments?: Prisma.AppointmentOrderByRelationAggregateInput
 }
 
 export type MedicalCenterWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  ownerId?: string
   AND?: Prisma.MedicalCenterWhereInput | Prisma.MedicalCenterWhereInput[]
   OR?: Prisma.MedicalCenterWhereInput[]
   NOT?: Prisma.MedicalCenterWhereInput | Prisma.MedicalCenterWhereInput[]
   centerName?: Prisma.StringFilter<"MedicalCenter"> | string
+  status?: Prisma.EnumSubscriptionStatusFilter<"MedicalCenter"> | $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Prisma.DateTimeNullableFilter<"MedicalCenter"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"MedicalCenter"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MedicalCenter"> | Date | string
-  owner?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
-  doctors?: Prisma.UserListRelationFilter
+  members?: Prisma.MedicalCenterMemberListRelationFilter
   patients?: Prisma.PatientListRelationFilter
-}, "id" | "ownerId">
+  prices?: Prisma.FacilityPriceListRelationFilter
+  appointments?: Prisma.AppointmentListRelationFilter
+}, "id">
 
 export type MedicalCenterOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   centerName?: Prisma.SortOrder
-  ownerId?: Prisma.SortOrderInput | Prisma.SortOrder
+  status?: Prisma.SortOrder
+  subscriptionEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.MedicalCenterCountOrderByAggregateInput
@@ -231,7 +243,8 @@ export type MedicalCenterScalarWhereWithAggregatesInput = {
   NOT?: Prisma.MedicalCenterScalarWhereWithAggregatesInput | Prisma.MedicalCenterScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"MedicalCenter"> | string
   centerName?: Prisma.StringWithAggregatesFilter<"MedicalCenter"> | string
-  ownerId?: Prisma.StringNullableWithAggregatesFilter<"MedicalCenter"> | string | null
+  status?: Prisma.EnumSubscriptionStatusWithAggregatesFilter<"MedicalCenter"> | $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Prisma.DateTimeNullableWithAggregatesFilter<"MedicalCenter"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"MedicalCenter"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"MedicalCenter"> | Date | string
 }
@@ -239,47 +252,60 @@ export type MedicalCenterScalarWhereWithAggregatesInput = {
 export type MedicalCenterCreateInput = {
   id?: string
   centerName: string
+  status?: $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  owner?: Prisma.UserCreateNestedOneWithoutOwnedMedicalCenterInput
-  doctors?: Prisma.UserCreateNestedManyWithoutMedicalCenterInput
+  members?: Prisma.MedicalCenterMemberCreateNestedManyWithoutMedicalCenterInput
   patients?: Prisma.PatientCreateNestedManyWithoutMedicalCentersInput
+  prices?: Prisma.FacilityPriceCreateNestedManyWithoutMedicalCenterInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutMedicalCenterInput
 }
 
 export type MedicalCenterUncheckedCreateInput = {
   id?: string
   centerName: string
-  ownerId?: string | null
+  status?: $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  doctors?: Prisma.UserUncheckedCreateNestedManyWithoutMedicalCenterInput
+  members?: Prisma.MedicalCenterMemberUncheckedCreateNestedManyWithoutMedicalCenterInput
   patients?: Prisma.PatientUncheckedCreateNestedManyWithoutMedicalCentersInput
+  prices?: Prisma.FacilityPriceUncheckedCreateNestedManyWithoutMedicalCenterInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutMedicalCenterInput
 }
 
 export type MedicalCenterUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   centerName?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  owner?: Prisma.UserUpdateOneWithoutOwnedMedicalCenterNestedInput
-  doctors?: Prisma.UserUpdateManyWithoutMedicalCenterNestedInput
+  members?: Prisma.MedicalCenterMemberUpdateManyWithoutMedicalCenterNestedInput
   patients?: Prisma.PatientUpdateManyWithoutMedicalCentersNestedInput
+  prices?: Prisma.FacilityPriceUpdateManyWithoutMedicalCenterNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutMedicalCenterNestedInput
 }
 
 export type MedicalCenterUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   centerName?: Prisma.StringFieldUpdateOperationsInput | string
-  ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  doctors?: Prisma.UserUncheckedUpdateManyWithoutMedicalCenterNestedInput
+  members?: Prisma.MedicalCenterMemberUncheckedUpdateManyWithoutMedicalCenterNestedInput
   patients?: Prisma.PatientUncheckedUpdateManyWithoutMedicalCentersNestedInput
+  prices?: Prisma.FacilityPriceUncheckedUpdateManyWithoutMedicalCenterNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutMedicalCenterNestedInput
 }
 
 export type MedicalCenterCreateManyInput = {
   id?: string
   centerName: string
-  ownerId?: string | null
+  status?: $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -287,6 +313,8 @@ export type MedicalCenterCreateManyInput = {
 export type MedicalCenterUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   centerName?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -294,20 +322,17 @@ export type MedicalCenterUpdateManyMutationInput = {
 export type MedicalCenterUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   centerName?: Prisma.StringFieldUpdateOperationsInput | string
-  ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-}
-
-export type MedicalCenterNullableScalarRelationFilter = {
-  is?: Prisma.MedicalCenterWhereInput | null
-  isNot?: Prisma.MedicalCenterWhereInput | null
 }
 
 export type MedicalCenterCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   centerName?: Prisma.SortOrder
-  ownerId?: Prisma.SortOrder
+  status?: Prisma.SortOrder
+  subscriptionEndsAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -315,7 +340,8 @@ export type MedicalCenterCountOrderByAggregateInput = {
 export type MedicalCenterMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   centerName?: Prisma.SortOrder
-  ownerId?: Prisma.SortOrder
+  status?: Prisma.SortOrder
+  subscriptionEndsAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -323,9 +349,15 @@ export type MedicalCenterMaxOrderByAggregateInput = {
 export type MedicalCenterMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   centerName?: Prisma.SortOrder
-  ownerId?: Prisma.SortOrder
+  status?: Prisma.SortOrder
+  subscriptionEndsAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type MedicalCenterScalarRelationFilter = {
+  is?: Prisma.MedicalCenterWhereInput
+  isNot?: Prisma.MedicalCenterWhereInput
 }
 
 export type MedicalCenterListRelationFilter = {
@@ -338,52 +370,23 @@ export type MedicalCenterOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type MedicalCenterCreateNestedOneWithoutDoctorsInput = {
-  create?: Prisma.XOR<Prisma.MedicalCenterCreateWithoutDoctorsInput, Prisma.MedicalCenterUncheckedCreateWithoutDoctorsInput>
-  connectOrCreate?: Prisma.MedicalCenterCreateOrConnectWithoutDoctorsInput
+export type MedicalCenterNullableScalarRelationFilter = {
+  is?: Prisma.MedicalCenterWhereInput | null
+  isNot?: Prisma.MedicalCenterWhereInput | null
+}
+
+export type MedicalCenterCreateNestedOneWithoutMembersInput = {
+  create?: Prisma.XOR<Prisma.MedicalCenterCreateWithoutMembersInput, Prisma.MedicalCenterUncheckedCreateWithoutMembersInput>
+  connectOrCreate?: Prisma.MedicalCenterCreateOrConnectWithoutMembersInput
   connect?: Prisma.MedicalCenterWhereUniqueInput
 }
 
-export type MedicalCenterCreateNestedOneWithoutOwnerInput = {
-  create?: Prisma.XOR<Prisma.MedicalCenterCreateWithoutOwnerInput, Prisma.MedicalCenterUncheckedCreateWithoutOwnerInput>
-  connectOrCreate?: Prisma.MedicalCenterCreateOrConnectWithoutOwnerInput
+export type MedicalCenterUpdateOneRequiredWithoutMembersNestedInput = {
+  create?: Prisma.XOR<Prisma.MedicalCenterCreateWithoutMembersInput, Prisma.MedicalCenterUncheckedCreateWithoutMembersInput>
+  connectOrCreate?: Prisma.MedicalCenterCreateOrConnectWithoutMembersInput
+  upsert?: Prisma.MedicalCenterUpsertWithoutMembersInput
   connect?: Prisma.MedicalCenterWhereUniqueInput
-}
-
-export type MedicalCenterUncheckedCreateNestedOneWithoutOwnerInput = {
-  create?: Prisma.XOR<Prisma.MedicalCenterCreateWithoutOwnerInput, Prisma.MedicalCenterUncheckedCreateWithoutOwnerInput>
-  connectOrCreate?: Prisma.MedicalCenterCreateOrConnectWithoutOwnerInput
-  connect?: Prisma.MedicalCenterWhereUniqueInput
-}
-
-export type MedicalCenterUpdateOneWithoutDoctorsNestedInput = {
-  create?: Prisma.XOR<Prisma.MedicalCenterCreateWithoutDoctorsInput, Prisma.MedicalCenterUncheckedCreateWithoutDoctorsInput>
-  connectOrCreate?: Prisma.MedicalCenterCreateOrConnectWithoutDoctorsInput
-  upsert?: Prisma.MedicalCenterUpsertWithoutDoctorsInput
-  disconnect?: Prisma.MedicalCenterWhereInput | boolean
-  delete?: Prisma.MedicalCenterWhereInput | boolean
-  connect?: Prisma.MedicalCenterWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.MedicalCenterUpdateToOneWithWhereWithoutDoctorsInput, Prisma.MedicalCenterUpdateWithoutDoctorsInput>, Prisma.MedicalCenterUncheckedUpdateWithoutDoctorsInput>
-}
-
-export type MedicalCenterUpdateOneWithoutOwnerNestedInput = {
-  create?: Prisma.XOR<Prisma.MedicalCenterCreateWithoutOwnerInput, Prisma.MedicalCenterUncheckedCreateWithoutOwnerInput>
-  connectOrCreate?: Prisma.MedicalCenterCreateOrConnectWithoutOwnerInput
-  upsert?: Prisma.MedicalCenterUpsertWithoutOwnerInput
-  disconnect?: Prisma.MedicalCenterWhereInput | boolean
-  delete?: Prisma.MedicalCenterWhereInput | boolean
-  connect?: Prisma.MedicalCenterWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.MedicalCenterUpdateToOneWithWhereWithoutOwnerInput, Prisma.MedicalCenterUpdateWithoutOwnerInput>, Prisma.MedicalCenterUncheckedUpdateWithoutOwnerInput>
-}
-
-export type MedicalCenterUncheckedUpdateOneWithoutOwnerNestedInput = {
-  create?: Prisma.XOR<Prisma.MedicalCenterCreateWithoutOwnerInput, Prisma.MedicalCenterUncheckedCreateWithoutOwnerInput>
-  connectOrCreate?: Prisma.MedicalCenterCreateOrConnectWithoutOwnerInput
-  upsert?: Prisma.MedicalCenterUpsertWithoutOwnerInput
-  disconnect?: Prisma.MedicalCenterWhereInput | boolean
-  delete?: Prisma.MedicalCenterWhereInput | boolean
-  connect?: Prisma.MedicalCenterWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.MedicalCenterUpdateToOneWithWhereWithoutOwnerInput, Prisma.MedicalCenterUpdateWithoutOwnerInput>, Prisma.MedicalCenterUncheckedUpdateWithoutOwnerInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MedicalCenterUpdateToOneWithWhereWithoutMembersInput, Prisma.MedicalCenterUpdateWithoutMembersInput>, Prisma.MedicalCenterUncheckedUpdateWithoutMembersInput>
 }
 
 export type MedicalCenterCreateNestedManyWithoutPatientsInput = {
@@ -424,126 +427,124 @@ export type MedicalCenterUncheckedUpdateManyWithoutPatientsNestedInput = {
   deleteMany?: Prisma.MedicalCenterScalarWhereInput | Prisma.MedicalCenterScalarWhereInput[]
 }
 
-export type MedicalCenterCreateWithoutDoctorsInput = {
-  id?: string
-  centerName: string
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  owner?: Prisma.UserCreateNestedOneWithoutOwnedMedicalCenterInput
-  patients?: Prisma.PatientCreateNestedManyWithoutMedicalCentersInput
+export type MedicalCenterCreateNestedOneWithoutAppointmentsInput = {
+  create?: Prisma.XOR<Prisma.MedicalCenterCreateWithoutAppointmentsInput, Prisma.MedicalCenterUncheckedCreateWithoutAppointmentsInput>
+  connectOrCreate?: Prisma.MedicalCenterCreateOrConnectWithoutAppointmentsInput
+  connect?: Prisma.MedicalCenterWhereUniqueInput
 }
 
-export type MedicalCenterUncheckedCreateWithoutDoctorsInput = {
+export type MedicalCenterUpdateOneWithoutAppointmentsNestedInput = {
+  create?: Prisma.XOR<Prisma.MedicalCenterCreateWithoutAppointmentsInput, Prisma.MedicalCenterUncheckedCreateWithoutAppointmentsInput>
+  connectOrCreate?: Prisma.MedicalCenterCreateOrConnectWithoutAppointmentsInput
+  upsert?: Prisma.MedicalCenterUpsertWithoutAppointmentsInput
+  disconnect?: Prisma.MedicalCenterWhereInput | boolean
+  delete?: Prisma.MedicalCenterWhereInput | boolean
+  connect?: Prisma.MedicalCenterWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MedicalCenterUpdateToOneWithWhereWithoutAppointmentsInput, Prisma.MedicalCenterUpdateWithoutAppointmentsInput>, Prisma.MedicalCenterUncheckedUpdateWithoutAppointmentsInput>
+}
+
+export type MedicalCenterCreateNestedOneWithoutPricesInput = {
+  create?: Prisma.XOR<Prisma.MedicalCenterCreateWithoutPricesInput, Prisma.MedicalCenterUncheckedCreateWithoutPricesInput>
+  connectOrCreate?: Prisma.MedicalCenterCreateOrConnectWithoutPricesInput
+  connect?: Prisma.MedicalCenterWhereUniqueInput
+}
+
+export type MedicalCenterUpdateOneWithoutPricesNestedInput = {
+  create?: Prisma.XOR<Prisma.MedicalCenterCreateWithoutPricesInput, Prisma.MedicalCenterUncheckedCreateWithoutPricesInput>
+  connectOrCreate?: Prisma.MedicalCenterCreateOrConnectWithoutPricesInput
+  upsert?: Prisma.MedicalCenterUpsertWithoutPricesInput
+  disconnect?: Prisma.MedicalCenterWhereInput | boolean
+  delete?: Prisma.MedicalCenterWhereInput | boolean
+  connect?: Prisma.MedicalCenterWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MedicalCenterUpdateToOneWithWhereWithoutPricesInput, Prisma.MedicalCenterUpdateWithoutPricesInput>, Prisma.MedicalCenterUncheckedUpdateWithoutPricesInput>
+}
+
+export type MedicalCenterCreateWithoutMembersInput = {
   id?: string
   centerName: string
-  ownerId?: string | null
+  status?: $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  patients?: Prisma.PatientCreateNestedManyWithoutMedicalCentersInput
+  prices?: Prisma.FacilityPriceCreateNestedManyWithoutMedicalCenterInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutMedicalCenterInput
+}
+
+export type MedicalCenterUncheckedCreateWithoutMembersInput = {
+  id?: string
+  centerName: string
+  status?: $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   patients?: Prisma.PatientUncheckedCreateNestedManyWithoutMedicalCentersInput
+  prices?: Prisma.FacilityPriceUncheckedCreateNestedManyWithoutMedicalCenterInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutMedicalCenterInput
 }
 
-export type MedicalCenterCreateOrConnectWithoutDoctorsInput = {
+export type MedicalCenterCreateOrConnectWithoutMembersInput = {
   where: Prisma.MedicalCenterWhereUniqueInput
-  create: Prisma.XOR<Prisma.MedicalCenterCreateWithoutDoctorsInput, Prisma.MedicalCenterUncheckedCreateWithoutDoctorsInput>
+  create: Prisma.XOR<Prisma.MedicalCenterCreateWithoutMembersInput, Prisma.MedicalCenterUncheckedCreateWithoutMembersInput>
 }
 
-export type MedicalCenterCreateWithoutOwnerInput = {
-  id?: string
-  centerName: string
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  doctors?: Prisma.UserCreateNestedManyWithoutMedicalCenterInput
-  patients?: Prisma.PatientCreateNestedManyWithoutMedicalCentersInput
-}
-
-export type MedicalCenterUncheckedCreateWithoutOwnerInput = {
-  id?: string
-  centerName: string
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  doctors?: Prisma.UserUncheckedCreateNestedManyWithoutMedicalCenterInput
-  patients?: Prisma.PatientUncheckedCreateNestedManyWithoutMedicalCentersInput
-}
-
-export type MedicalCenterCreateOrConnectWithoutOwnerInput = {
-  where: Prisma.MedicalCenterWhereUniqueInput
-  create: Prisma.XOR<Prisma.MedicalCenterCreateWithoutOwnerInput, Prisma.MedicalCenterUncheckedCreateWithoutOwnerInput>
-}
-
-export type MedicalCenterUpsertWithoutDoctorsInput = {
-  update: Prisma.XOR<Prisma.MedicalCenterUpdateWithoutDoctorsInput, Prisma.MedicalCenterUncheckedUpdateWithoutDoctorsInput>
-  create: Prisma.XOR<Prisma.MedicalCenterCreateWithoutDoctorsInput, Prisma.MedicalCenterUncheckedCreateWithoutDoctorsInput>
+export type MedicalCenterUpsertWithoutMembersInput = {
+  update: Prisma.XOR<Prisma.MedicalCenterUpdateWithoutMembersInput, Prisma.MedicalCenterUncheckedUpdateWithoutMembersInput>
+  create: Prisma.XOR<Prisma.MedicalCenterCreateWithoutMembersInput, Prisma.MedicalCenterUncheckedCreateWithoutMembersInput>
   where?: Prisma.MedicalCenterWhereInput
 }
 
-export type MedicalCenterUpdateToOneWithWhereWithoutDoctorsInput = {
+export type MedicalCenterUpdateToOneWithWhereWithoutMembersInput = {
   where?: Prisma.MedicalCenterWhereInput
-  data: Prisma.XOR<Prisma.MedicalCenterUpdateWithoutDoctorsInput, Prisma.MedicalCenterUncheckedUpdateWithoutDoctorsInput>
+  data: Prisma.XOR<Prisma.MedicalCenterUpdateWithoutMembersInput, Prisma.MedicalCenterUncheckedUpdateWithoutMembersInput>
 }
 
-export type MedicalCenterUpdateWithoutDoctorsInput = {
+export type MedicalCenterUpdateWithoutMembersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   centerName?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  owner?: Prisma.UserUpdateOneWithoutOwnedMedicalCenterNestedInput
   patients?: Prisma.PatientUpdateManyWithoutMedicalCentersNestedInput
+  prices?: Prisma.FacilityPriceUpdateManyWithoutMedicalCenterNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutMedicalCenterNestedInput
 }
 
-export type MedicalCenterUncheckedUpdateWithoutDoctorsInput = {
+export type MedicalCenterUncheckedUpdateWithoutMembersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   centerName?: Prisma.StringFieldUpdateOperationsInput | string
-  ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   patients?: Prisma.PatientUncheckedUpdateManyWithoutMedicalCentersNestedInput
-}
-
-export type MedicalCenterUpsertWithoutOwnerInput = {
-  update: Prisma.XOR<Prisma.MedicalCenterUpdateWithoutOwnerInput, Prisma.MedicalCenterUncheckedUpdateWithoutOwnerInput>
-  create: Prisma.XOR<Prisma.MedicalCenterCreateWithoutOwnerInput, Prisma.MedicalCenterUncheckedCreateWithoutOwnerInput>
-  where?: Prisma.MedicalCenterWhereInput
-}
-
-export type MedicalCenterUpdateToOneWithWhereWithoutOwnerInput = {
-  where?: Prisma.MedicalCenterWhereInput
-  data: Prisma.XOR<Prisma.MedicalCenterUpdateWithoutOwnerInput, Prisma.MedicalCenterUncheckedUpdateWithoutOwnerInput>
-}
-
-export type MedicalCenterUpdateWithoutOwnerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  centerName?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  doctors?: Prisma.UserUpdateManyWithoutMedicalCenterNestedInput
-  patients?: Prisma.PatientUpdateManyWithoutMedicalCentersNestedInput
-}
-
-export type MedicalCenterUncheckedUpdateWithoutOwnerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  centerName?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  doctors?: Prisma.UserUncheckedUpdateManyWithoutMedicalCenterNestedInput
-  patients?: Prisma.PatientUncheckedUpdateManyWithoutMedicalCentersNestedInput
+  prices?: Prisma.FacilityPriceUncheckedUpdateManyWithoutMedicalCenterNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutMedicalCenterNestedInput
 }
 
 export type MedicalCenterCreateWithoutPatientsInput = {
   id?: string
   centerName: string
+  status?: $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  owner?: Prisma.UserCreateNestedOneWithoutOwnedMedicalCenterInput
-  doctors?: Prisma.UserCreateNestedManyWithoutMedicalCenterInput
+  members?: Prisma.MedicalCenterMemberCreateNestedManyWithoutMedicalCenterInput
+  prices?: Prisma.FacilityPriceCreateNestedManyWithoutMedicalCenterInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutMedicalCenterInput
 }
 
 export type MedicalCenterUncheckedCreateWithoutPatientsInput = {
   id?: string
   centerName: string
-  ownerId?: string | null
+  status?: $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  doctors?: Prisma.UserUncheckedCreateNestedManyWithoutMedicalCenterInput
+  members?: Prisma.MedicalCenterMemberUncheckedCreateNestedManyWithoutMedicalCenterInput
+  prices?: Prisma.FacilityPriceUncheckedCreateNestedManyWithoutMedicalCenterInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutMedicalCenterInput
 }
 
 export type MedicalCenterCreateOrConnectWithoutPatientsInput = {
@@ -573,33 +574,169 @@ export type MedicalCenterScalarWhereInput = {
   NOT?: Prisma.MedicalCenterScalarWhereInput | Prisma.MedicalCenterScalarWhereInput[]
   id?: Prisma.StringFilter<"MedicalCenter"> | string
   centerName?: Prisma.StringFilter<"MedicalCenter"> | string
-  ownerId?: Prisma.StringNullableFilter<"MedicalCenter"> | string | null
+  status?: Prisma.EnumSubscriptionStatusFilter<"MedicalCenter"> | $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Prisma.DateTimeNullableFilter<"MedicalCenter"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"MedicalCenter"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MedicalCenter"> | Date | string
+}
+
+export type MedicalCenterCreateWithoutAppointmentsInput = {
+  id?: string
+  centerName: string
+  status?: $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.MedicalCenterMemberCreateNestedManyWithoutMedicalCenterInput
+  patients?: Prisma.PatientCreateNestedManyWithoutMedicalCentersInput
+  prices?: Prisma.FacilityPriceCreateNestedManyWithoutMedicalCenterInput
+}
+
+export type MedicalCenterUncheckedCreateWithoutAppointmentsInput = {
+  id?: string
+  centerName: string
+  status?: $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.MedicalCenterMemberUncheckedCreateNestedManyWithoutMedicalCenterInput
+  patients?: Prisma.PatientUncheckedCreateNestedManyWithoutMedicalCentersInput
+  prices?: Prisma.FacilityPriceUncheckedCreateNestedManyWithoutMedicalCenterInput
+}
+
+export type MedicalCenterCreateOrConnectWithoutAppointmentsInput = {
+  where: Prisma.MedicalCenterWhereUniqueInput
+  create: Prisma.XOR<Prisma.MedicalCenterCreateWithoutAppointmentsInput, Prisma.MedicalCenterUncheckedCreateWithoutAppointmentsInput>
+}
+
+export type MedicalCenterUpsertWithoutAppointmentsInput = {
+  update: Prisma.XOR<Prisma.MedicalCenterUpdateWithoutAppointmentsInput, Prisma.MedicalCenterUncheckedUpdateWithoutAppointmentsInput>
+  create: Prisma.XOR<Prisma.MedicalCenterCreateWithoutAppointmentsInput, Prisma.MedicalCenterUncheckedCreateWithoutAppointmentsInput>
+  where?: Prisma.MedicalCenterWhereInput
+}
+
+export type MedicalCenterUpdateToOneWithWhereWithoutAppointmentsInput = {
+  where?: Prisma.MedicalCenterWhereInput
+  data: Prisma.XOR<Prisma.MedicalCenterUpdateWithoutAppointmentsInput, Prisma.MedicalCenterUncheckedUpdateWithoutAppointmentsInput>
+}
+
+export type MedicalCenterUpdateWithoutAppointmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  centerName?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.MedicalCenterMemberUpdateManyWithoutMedicalCenterNestedInput
+  patients?: Prisma.PatientUpdateManyWithoutMedicalCentersNestedInput
+  prices?: Prisma.FacilityPriceUpdateManyWithoutMedicalCenterNestedInput
+}
+
+export type MedicalCenterUncheckedUpdateWithoutAppointmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  centerName?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.MedicalCenterMemberUncheckedUpdateManyWithoutMedicalCenterNestedInput
+  patients?: Prisma.PatientUncheckedUpdateManyWithoutMedicalCentersNestedInput
+  prices?: Prisma.FacilityPriceUncheckedUpdateManyWithoutMedicalCenterNestedInput
+}
+
+export type MedicalCenterCreateWithoutPricesInput = {
+  id?: string
+  centerName: string
+  status?: $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.MedicalCenterMemberCreateNestedManyWithoutMedicalCenterInput
+  patients?: Prisma.PatientCreateNestedManyWithoutMedicalCentersInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutMedicalCenterInput
+}
+
+export type MedicalCenterUncheckedCreateWithoutPricesInput = {
+  id?: string
+  centerName: string
+  status?: $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.MedicalCenterMemberUncheckedCreateNestedManyWithoutMedicalCenterInput
+  patients?: Prisma.PatientUncheckedCreateNestedManyWithoutMedicalCentersInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutMedicalCenterInput
+}
+
+export type MedicalCenterCreateOrConnectWithoutPricesInput = {
+  where: Prisma.MedicalCenterWhereUniqueInput
+  create: Prisma.XOR<Prisma.MedicalCenterCreateWithoutPricesInput, Prisma.MedicalCenterUncheckedCreateWithoutPricesInput>
+}
+
+export type MedicalCenterUpsertWithoutPricesInput = {
+  update: Prisma.XOR<Prisma.MedicalCenterUpdateWithoutPricesInput, Prisma.MedicalCenterUncheckedUpdateWithoutPricesInput>
+  create: Prisma.XOR<Prisma.MedicalCenterCreateWithoutPricesInput, Prisma.MedicalCenterUncheckedCreateWithoutPricesInput>
+  where?: Prisma.MedicalCenterWhereInput
+}
+
+export type MedicalCenterUpdateToOneWithWhereWithoutPricesInput = {
+  where?: Prisma.MedicalCenterWhereInput
+  data: Prisma.XOR<Prisma.MedicalCenterUpdateWithoutPricesInput, Prisma.MedicalCenterUncheckedUpdateWithoutPricesInput>
+}
+
+export type MedicalCenterUpdateWithoutPricesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  centerName?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.MedicalCenterMemberUpdateManyWithoutMedicalCenterNestedInput
+  patients?: Prisma.PatientUpdateManyWithoutMedicalCentersNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutMedicalCenterNestedInput
+}
+
+export type MedicalCenterUncheckedUpdateWithoutPricesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  centerName?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.MedicalCenterMemberUncheckedUpdateManyWithoutMedicalCenterNestedInput
+  patients?: Prisma.PatientUncheckedUpdateManyWithoutMedicalCentersNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutMedicalCenterNestedInput
 }
 
 export type MedicalCenterUpdateWithoutPatientsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   centerName?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  owner?: Prisma.UserUpdateOneWithoutOwnedMedicalCenterNestedInput
-  doctors?: Prisma.UserUpdateManyWithoutMedicalCenterNestedInput
+  members?: Prisma.MedicalCenterMemberUpdateManyWithoutMedicalCenterNestedInput
+  prices?: Prisma.FacilityPriceUpdateManyWithoutMedicalCenterNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutMedicalCenterNestedInput
 }
 
 export type MedicalCenterUncheckedUpdateWithoutPatientsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   centerName?: Prisma.StringFieldUpdateOperationsInput | string
-  ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  doctors?: Prisma.UserUncheckedUpdateManyWithoutMedicalCenterNestedInput
+  members?: Prisma.MedicalCenterMemberUncheckedUpdateManyWithoutMedicalCenterNestedInput
+  prices?: Prisma.FacilityPriceUncheckedUpdateManyWithoutMedicalCenterNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutMedicalCenterNestedInput
 }
 
 export type MedicalCenterUncheckedUpdateManyWithoutPatientsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   centerName?: Prisma.StringFieldUpdateOperationsInput | string
-  ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -610,13 +747,17 @@ export type MedicalCenterUncheckedUpdateManyWithoutPatientsInput = {
  */
 
 export type MedicalCenterCountOutputType = {
-  doctors: number
+  members: number
   patients: number
+  prices: number
+  appointments: number
 }
 
 export type MedicalCenterCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  doctors?: boolean | MedicalCenterCountOutputTypeCountDoctorsArgs
+  members?: boolean | MedicalCenterCountOutputTypeCountMembersArgs
   patients?: boolean | MedicalCenterCountOutputTypeCountPatientsArgs
+  prices?: boolean | MedicalCenterCountOutputTypeCountPricesArgs
+  appointments?: boolean | MedicalCenterCountOutputTypeCountAppointmentsArgs
 }
 
 /**
@@ -632,8 +773,8 @@ export type MedicalCenterCountOutputTypeDefaultArgs<ExtArgs extends runtime.Type
 /**
  * MedicalCenterCountOutputType without action
  */
-export type MedicalCenterCountOutputTypeCountDoctorsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.UserWhereInput
+export type MedicalCenterCountOutputTypeCountMembersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MedicalCenterMemberWhereInput
 }
 
 /**
@@ -643,70 +784,86 @@ export type MedicalCenterCountOutputTypeCountPatientsArgs<ExtArgs extends runtim
   where?: Prisma.PatientWhereInput
 }
 
+/**
+ * MedicalCenterCountOutputType without action
+ */
+export type MedicalCenterCountOutputTypeCountPricesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FacilityPriceWhereInput
+}
+
+/**
+ * MedicalCenterCountOutputType without action
+ */
+export type MedicalCenterCountOutputTypeCountAppointmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AppointmentWhereInput
+}
+
 
 export type MedicalCenterSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   centerName?: boolean
-  ownerId?: boolean
+  status?: boolean
+  subscriptionEndsAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  owner?: boolean | Prisma.MedicalCenter$ownerArgs<ExtArgs>
-  doctors?: boolean | Prisma.MedicalCenter$doctorsArgs<ExtArgs>
+  members?: boolean | Prisma.MedicalCenter$membersArgs<ExtArgs>
   patients?: boolean | Prisma.MedicalCenter$patientsArgs<ExtArgs>
+  prices?: boolean | Prisma.MedicalCenter$pricesArgs<ExtArgs>
+  appointments?: boolean | Prisma.MedicalCenter$appointmentsArgs<ExtArgs>
   _count?: boolean | Prisma.MedicalCenterCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["medicalCenter"]>
 
 export type MedicalCenterSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   centerName?: boolean
-  ownerId?: boolean
+  status?: boolean
+  subscriptionEndsAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  owner?: boolean | Prisma.MedicalCenter$ownerArgs<ExtArgs>
 }, ExtArgs["result"]["medicalCenter"]>
 
 export type MedicalCenterSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   centerName?: boolean
-  ownerId?: boolean
+  status?: boolean
+  subscriptionEndsAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  owner?: boolean | Prisma.MedicalCenter$ownerArgs<ExtArgs>
 }, ExtArgs["result"]["medicalCenter"]>
 
 export type MedicalCenterSelectScalar = {
   id?: boolean
   centerName?: boolean
-  ownerId?: boolean
+  status?: boolean
+  subscriptionEndsAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type MedicalCenterOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "centerName" | "ownerId" | "createdAt" | "updatedAt", ExtArgs["result"]["medicalCenter"]>
+export type MedicalCenterOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "centerName" | "status" | "subscriptionEndsAt" | "createdAt" | "updatedAt", ExtArgs["result"]["medicalCenter"]>
 export type MedicalCenterInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  owner?: boolean | Prisma.MedicalCenter$ownerArgs<ExtArgs>
-  doctors?: boolean | Prisma.MedicalCenter$doctorsArgs<ExtArgs>
+  members?: boolean | Prisma.MedicalCenter$membersArgs<ExtArgs>
   patients?: boolean | Prisma.MedicalCenter$patientsArgs<ExtArgs>
+  prices?: boolean | Prisma.MedicalCenter$pricesArgs<ExtArgs>
+  appointments?: boolean | Prisma.MedicalCenter$appointmentsArgs<ExtArgs>
   _count?: boolean | Prisma.MedicalCenterCountOutputTypeDefaultArgs<ExtArgs>
 }
-export type MedicalCenterIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  owner?: boolean | Prisma.MedicalCenter$ownerArgs<ExtArgs>
-}
-export type MedicalCenterIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  owner?: boolean | Prisma.MedicalCenter$ownerArgs<ExtArgs>
-}
+export type MedicalCenterIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type MedicalCenterIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
 
 export type $MedicalCenterPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "MedicalCenter"
   objects: {
-    owner: Prisma.$UserPayload<ExtArgs> | null
-    doctors: Prisma.$UserPayload<ExtArgs>[]
+    members: Prisma.$MedicalCenterMemberPayload<ExtArgs>[]
     patients: Prisma.$PatientPayload<ExtArgs>[]
+    prices: Prisma.$FacilityPricePayload<ExtArgs>[]
+    appointments: Prisma.$AppointmentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     centerName: string
-    ownerId: string | null
+    status: $Enums.SubscriptionStatus
+    subscriptionEndsAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["medicalCenter"]>
@@ -1103,9 +1260,10 @@ readonly fields: MedicalCenterFieldRefs;
  */
 export interface Prisma__MedicalCenterClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  owner<T extends Prisma.MedicalCenter$ownerArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MedicalCenter$ownerArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  doctors<T extends Prisma.MedicalCenter$doctorsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MedicalCenter$doctorsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  members<T extends Prisma.MedicalCenter$membersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MedicalCenter$membersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MedicalCenterMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   patients<T extends Prisma.MedicalCenter$patientsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MedicalCenter$patientsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PatientPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  prices<T extends Prisma.MedicalCenter$pricesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MedicalCenter$pricesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FacilityPricePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  appointments<T extends Prisma.MedicalCenter$appointmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MedicalCenter$appointmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AppointmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1137,7 +1295,8 @@ export interface Prisma__MedicalCenterClient<T, Null = never, ExtArgs extends ru
 export interface MedicalCenterFieldRefs {
   readonly id: Prisma.FieldRef<"MedicalCenter", 'String'>
   readonly centerName: Prisma.FieldRef<"MedicalCenter", 'String'>
-  readonly ownerId: Prisma.FieldRef<"MedicalCenter", 'String'>
+  readonly status: Prisma.FieldRef<"MedicalCenter", 'SubscriptionStatus'>
+  readonly subscriptionEndsAt: Prisma.FieldRef<"MedicalCenter", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"MedicalCenter", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"MedicalCenter", 'DateTime'>
 }
@@ -1389,10 +1548,6 @@ export type MedicalCenterCreateManyAndReturnArgs<ExtArgs extends runtime.Types.E
    */
   data: Prisma.MedicalCenterCreateManyInput | Prisma.MedicalCenterCreateManyInput[]
   skipDuplicates?: boolean
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.MedicalCenterIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1463,10 +1618,6 @@ export type MedicalCenterUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.E
    * Limit how many MedicalCenters to update.
    */
   limit?: number
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.MedicalCenterIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1536,46 +1687,27 @@ export type MedicalCenterDeleteManyArgs<ExtArgs extends runtime.Types.Extensions
 }
 
 /**
- * MedicalCenter.owner
+ * MedicalCenter.members
  */
-export type MedicalCenter$ownerArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type MedicalCenter$membersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the User
+   * Select specific fields to fetch from the MedicalCenterMember
    */
-  select?: Prisma.UserSelect<ExtArgs> | null
+  select?: Prisma.MedicalCenterMemberSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the User
+   * Omit specific fields from the MedicalCenterMember
    */
-  omit?: Prisma.UserOmit<ExtArgs> | null
+  omit?: Prisma.MedicalCenterMemberOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.UserInclude<ExtArgs> | null
-  where?: Prisma.UserWhereInput
-}
-
-/**
- * MedicalCenter.doctors
- */
-export type MedicalCenter$doctorsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the User
-   */
-  select?: Prisma.UserSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the User
-   */
-  omit?: Prisma.UserOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.UserInclude<ExtArgs> | null
-  where?: Prisma.UserWhereInput
-  orderBy?: Prisma.UserOrderByWithRelationInput | Prisma.UserOrderByWithRelationInput[]
-  cursor?: Prisma.UserWhereUniqueInput
+  include?: Prisma.MedicalCenterMemberInclude<ExtArgs> | null
+  where?: Prisma.MedicalCenterMemberWhereInput
+  orderBy?: Prisma.MedicalCenterMemberOrderByWithRelationInput | Prisma.MedicalCenterMemberOrderByWithRelationInput[]
+  cursor?: Prisma.MedicalCenterMemberWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.UserScalarFieldEnum | Prisma.UserScalarFieldEnum[]
+  distinct?: Prisma.MedicalCenterMemberScalarFieldEnum | Prisma.MedicalCenterMemberScalarFieldEnum[]
 }
 
 /**
@@ -1600,6 +1732,54 @@ export type MedicalCenter$patientsArgs<ExtArgs extends runtime.Types.Extensions.
   take?: number
   skip?: number
   distinct?: Prisma.PatientScalarFieldEnum | Prisma.PatientScalarFieldEnum[]
+}
+
+/**
+ * MedicalCenter.prices
+ */
+export type MedicalCenter$pricesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FacilityPrice
+   */
+  select?: Prisma.FacilityPriceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FacilityPrice
+   */
+  omit?: Prisma.FacilityPriceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FacilityPriceInclude<ExtArgs> | null
+  where?: Prisma.FacilityPriceWhereInput
+  orderBy?: Prisma.FacilityPriceOrderByWithRelationInput | Prisma.FacilityPriceOrderByWithRelationInput[]
+  cursor?: Prisma.FacilityPriceWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FacilityPriceScalarFieldEnum | Prisma.FacilityPriceScalarFieldEnum[]
+}
+
+/**
+ * MedicalCenter.appointments
+ */
+export type MedicalCenter$appointmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Appointment
+   */
+  select?: Prisma.AppointmentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Appointment
+   */
+  omit?: Prisma.AppointmentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AppointmentInclude<ExtArgs> | null
+  where?: Prisma.AppointmentWhereInput
+  orderBy?: Prisma.AppointmentOrderByWithRelationInput | Prisma.AppointmentOrderByWithRelationInput[]
+  cursor?: Prisma.AppointmentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AppointmentScalarFieldEnum | Prisma.AppointmentScalarFieldEnum[]
 }
 
 /**

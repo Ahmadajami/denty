@@ -119,7 +119,7 @@
 					<Search bind:query {onNoPatient}>
 						{#snippet row(p)}
 							<li class="flex items-center justify-between gap-4 px-4 py-3">
-								<p>{getLocale() == 'ar' ? p.fullnameAr : p.fullname}</p>
+								<p>{getLocale() == 'ar' ? p.fullnameAr : p.fullnameEn}</p>
 								<Button variant="outline" size="sm" class="font-semibold">Start session</Button>
 							</li>
 						{/snippet}

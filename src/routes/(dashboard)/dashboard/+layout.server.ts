@@ -7,6 +7,5 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 		redirect(302, localizeHref('/login'));
 	}
 
-	console.log(locals.user.type);
 	return { user: locals.user };
 };

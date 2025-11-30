@@ -1,164 +1,304 @@
-
-
 datasource db {
   provider = "postgresql"
 }
 
-// Define custom output path for generated Prisma Client
-
 generator client {
   provider = "prisma-client"
-   output   = "../src/lib/server/db/generated/prisma"
+  output   = "../src/lib/server/db/generated/prisma"
 }
 
-/* =================================
-   USER MODEL (Doctors + Owners)
-   ================================= */
+/* =========================================================
+   1. USER & SYSTEM ACCESS
+   ========================================================= */
+
 model User {
   id              String   @id @default(cuid())
-  nameAr          String
+
+  // Personal Details (Bilingual)
   nameEn          String
-  specialization  String?
+  nameAr          String
   phoneNumber     String   @unique
   passwordHash    String
   userAuthToken   String   @unique
-  createdPatients  Patient[] @relation("PatientCreator")
-  // Clinic owner relation (optional, one-to-one)
-  ownedClinic     Clinic?  @relation("ClinicOwner")
   
+  specialization  String  // e.g., "Orthodontist", "General Practitioner"
 
-  // Medical center doctor relation (optional)
-  medicalCenterId String?
-  medicalCenter   MedicalCenter? @relation("MedicalCenterDoctors", fields: [medicalCenterId], references: [id])
+  // SYSTEM ROLE: Defines if this is You (SaaS Admin) or a Client (Doctor)
+  systemRole      SystemRole @default(CUSTOMER)
 
-  // Medical center owner relation (optional)
-  ownedMedicalCenter MedicalCenter? @relation("MedicalCenterOwner")
+  // MEMBERSHIPS: Where does this user work?
+  clinicMemberships    ClinicMember[]
+  centerMemberships    MedicalCenterMember[]
 
-  isOwner         Boolean @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  role   Role @relation(fields: [roleId], references: [id])
-  roleId Int
-  status       SubscriptionStatus @default(PENDING) // current state
+  // PATIENT ACCESS:
+  // 1. Audit: Who originally created the patient profile?
+  createdPatients      Patient[]       @relation("PatientCreator")
+  // 2. Visiting Access: Specific patients a Visiting Doctor is allowed to see
+  accessiblePatients   PatientAccess[]
+  
+  // OPERATIONS:
+  appointments         Appointment[]   @relation("DoctorAppointments")
+  // REMOVED: MedicalRecords relation
 
-   
-  @@index([medicalCenterId])           // For join to MedicalCenter
-  @@index([roleId])                     // For join to Role
-  @@index([isOwner])                    // For owner filtering
-  @@index([status])                     // For subscription filtering
-  @@index([isOwner, medicalCenterId])   // Composite for doctor type detection
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  status          UserStatus @default(ACTIVE)
 }
 
-/* 
-============================
-CLINIC (Single Doctor Owner)
-============================ 
-*/
+/* =========================================================
+   2. FACILITIES (Tenants)
+   ========================================================= */
 
 model Clinic {
   id            String   @id @default(cuid())
-  clinicName    String   @unique
+  name          String   @unique
 
-  ownerId       String?  @unique
-  owner         User?    @relation("ClinicOwner", fields: [ownerId], references: [id])
+  // SUBSCRIPTION & STATUS
+  status             SubscriptionStatus @default(PENDING) // Needs Admin Approval
+  subscriptionEndsAt DateTime?          // For SaaS billing logic
 
-  // NEW many-to-many relation
+  // Staff & Management
+  members       ClinicMember[]
+
+  // Patient Registry
   patients      Patient[] @relation("PatientClinics")
+
+  // Financials & Operations
+  prices        FacilityPrice[]
+  appointments  Appointment[]
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
 
-/* ============================================
-   MEDICAL CENTER (Multi-Doctor + Owner)
-   ============================================ */
 model MedicalCenter {
   id             String  @id @default(cuid())
   centerName     String
 
-  ownerId        String? @unique
-  owner          User?   @relation("MedicalCenterOwner", fields: [ownerId], references: [id])
+  // SUBSCRIPTION & STATUS
+  status             SubscriptionStatus @default(PENDING) // Needs Admin Approval
+  subscriptionEndsAt DateTime?          // For SaaS billing logic
 
-  doctors        User[]  @relation("MedicalCenterDoctors")
+  // Staff & Management
+  members        MedicalCenterMember[]
 
-  // NEW many-to-many relation
+  // Patient Registry
   patients       Patient[] @relation("PatientMedicalCenters")
+
+  // Financials & Operations
+  prices         FacilityPrice[]
+  appointments   Appointment[]
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
 
+/* =========================================================
+   3. MEMBERSHIPS (Role-Based Access Control)
+   ========================================================= */
 
+model ClinicMember {
+  id        String      @id @default(cuid())
+  
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  clinicId  String
+  clinic    Clinic      @relation(fields: [clinicId], references: [id], onDelete: Cascade)
 
-/* 
-============================
-ROLE (DEFINES USER ROLES(ADMIN, DOCTOR, ETC))
-============================ 
-*/
-model Role {
-  id   Int    @id @default(autoincrement())
-  name String @unique
-  User User[]
+  role      ClinicRole  
+  
+  joinedAt  DateTime    @default(now())
+
+  @@unique([userId, clinicId]) 
 }
 
+model MedicalCenterMember {
+  id              String   @id @default(cuid())
+  
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  medicalCenterId String
+  medicalCenter   MedicalCenter @relation(fields: [medicalCenterId], references: [id], onDelete: Cascade)
+
+  role            CenterRole 
+
+  joinedAt        DateTime      @default(now())
+
+  @@unique([userId, medicalCenterId])
+}
+
+/* =========================================================
+   4. PATIENTS & PRIVACY
+   ========================================================= */
 
 model Patient {
   id            String   @id @default(cuid())
 
-  fullname      String
+  fullnameEn    String
   fullnameAr    String   
   phoneNumber   String   @unique
+  birthDate     DateTime?
+  gender        Gender?
 
-  createdById   String
-  createdBy     User     @relation("PatientCreator", fields: [createdById], references: [id])
-
-  
+  // Facility Links (Where have they been treated?)
   clinics        Clinic[]        @relation("PatientClinics")
   medicalCenters MedicalCenter[] @relation("PatientMedicalCenters")
 
-  createdAt       DateTime        @default(now())
-  updated         DateTime        @updatedAt
+  // Audit: Who typed them in first?
+  createdById   String
+  createdBy     User     @relation("PatientCreator", fields: [createdById], references: [id])
+
+  // Security: Grants access to Visiting Doctors
+  doctorAccess  PatientAccess[]
+
+  // Medical Data
+  appointments  Appointment[]
+  // REMOVED: MedicalRecords relation
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 
   @@index([phoneNumber])
 }
 
-/* =================================
-   TREATMENT CATALOG & GROUPS
-   ================================= */
+// The "Key" that opens a patient file for a Visiting Doctor
+model PatientAccess {
+  id          String   @id @default(cuid())
+
+  patientId   String
+  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  doctorId    String
+  doctor      User     @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  // Context: Access is granted usually when an appointment is made
+  clinicId    String? 
+  
+  grantedAt   DateTime @default(now())
+
+  @@unique([patientId, doctorId, clinicId])
+}
+
+/* =========================================================
+   5. OPERATIONS (Appointments)
+   ========================================================= */
+
+model Appointment {
+  id          String   @id @default(cuid())
+  
+  date        DateTime // Date and Time of visit
+  
+  patientId   String
+  patient     Patient  @relation(fields: [patientId], references: [id])
+  
+  doctorId    String
+  doctor      User     @relation("DoctorAppointments", fields: [doctorId], references: [id])
+
+  // Link to EITHER a Clinic OR a Center
+  clinicId        String?
+  clinic          Clinic?        @relation(fields: [clinicId], references: [id])
+  
+  medicalCenterId String?
+  medicalCenter   MedicalCenter? @relation(fields: [medicalCenterId], references: [id])
+
+  status      AppointmentStatus @default(SCHEDULED)
+  notes       String?
+
+  createdAt   DateTime @default(now())
+}
+
+// REMOVED: MedicalRecord Model
+
+/* =========================================================
+   6. TREATMENTS & PRICING CATALOG
+   ========================================================= */
 
 model TreatmentGroup {
   id          String   @id @default(cuid())
-  name        String   @unique // e.g., "Tooth Gum", "Surgery"
-  nameAr      String?  // Optional Arabic name for consistency with User model
-  color       String   // e.g., "#FFC0CB" or "Pink"
-  
-  // Relation: A group contains many treatments
+  nameEn      String   @unique 
+  nameAr      String?
+  color       String   // UI decoration
   treatments  Treatment[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 }
 
 model Treatment {
   id          String   @id @default(cuid())
-  name        String   // e.g., "Gingivectomy", "Deep Cleaning"
+  nameEn      String   
   nameAr      String?  
   
-  // Relation to Group
   groupId     String
   group       TreatmentGroup @relation(fields: [groupId], references: [id])
 
-  // Optional: Base price (can be overridden by clinics later)
   basePrice   Decimal? @default(0.0)
+  
+  // Custom prices per facility
+  facilityPrices FacilityPrice[]
+  
+  // REMOVED: records relation
+}
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model FacilityPrice {
+  id              String    @id @default(cuid())
+  price           Decimal
+  
+  treatmentId     String
+  treatment       Treatment @relation(fields: [treatmentId], references: [id])
+  
+  clinicId        String?
+  clinic          Clinic?   @relation(fields: [clinicId], references: [id])
+  
+  medicalCenterId String?
+  medicalCenter   MedicalCenter? @relation(fields: [medicalCenterId], references: [id])
 
-  @@index([groupId]) // Optimization for fetching treatments by group
+  @@unique([treatmentId, clinicId])
+  @@unique([treatmentId, medicalCenterId])
+}
+
+/* =========================================================
+   7. ENUMS (Logic Control)
+   ========================================================= */
+
+enum SystemRole {
+  CUSTOMER       // Doctors, Owners, Nurses
+  SUPPORT_AGENT  // Your Company Staff (Read Only / Debug)
+  SUPER_ADMIN    // Your Company Owner (Full Control)
+}
+
+enum ClinicRole {
+  OWNER            // Can delete clinic, set prices, see all patients
+  DOCTOR_EMPLOYEE  // See all patients, add records
+  VISITING_DOCTOR  // RESTRICTED: See only assigned 'PatientAccess' patients
+  ASSISTANT        // Schedule only
+}
+
+enum CenterRole {
+  OWNER            // Business Owner
+  DOCTOR           // Medical Staff (Full Access to Center Patients)
+  NURSE            // Support
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
 }
 
 enum SubscriptionStatus {
-  PENDING
-  SUCCESS
+  PENDING   // Signed up, waiting for payment/approval
+  ACTIVE    // Paid and running
+  SUSPENDED // Payment failed or policy violation
+  CANCELLED // User stopped service
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
   CANCELLED
+  NO_SHOW
 }

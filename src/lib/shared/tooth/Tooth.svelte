@@ -113,6 +113,7 @@
 						: `url(#${getGradientId(tooth.id)})`}
 
 			{#if style.type === 'polygon'}
+				
 				<polygon
 					direction="ltr"
 					class="tooth"

@@ -2,12 +2,13 @@ import { fail } from 'sveltekit-superforms';
 import type { Actions, PageServerLoad } from './$types';
 import { message, superValidate } from 'sveltekit-superforms/server';
 import { zod4 } from 'sveltekit-superforms/adapters';
-import { authschema } from '$lib/auth';
+
 import { db } from '$lib/server/prisma';
 import { redirect } from '@sveltejs/kit';
 import { localizeHref } from '$lib/paraglide/runtime';
 import { verifyMe } from '$lib/server/hash-me';
 import { dev } from '$app/environment';
+import { authschema } from './schema';
 
 //import { localizeHref } from '$lib/paraglide/runtime';
 

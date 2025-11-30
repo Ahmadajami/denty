@@ -54,10 +54,14 @@ export const ModelName = {
   User: 'User',
   Clinic: 'Clinic',
   MedicalCenter: 'MedicalCenter',
-  Role: 'Role',
+  ClinicMember: 'ClinicMember',
+  MedicalCenterMember: 'MedicalCenterMember',
   Patient: 'Patient',
+  PatientAccess: 'PatientAccess',
+  Appointment: 'Appointment',
   TreatmentGroup: 'TreatmentGroup',
-  Treatment: 'Treatment'
+  Treatment: 'Treatment',
+  FacilityPrice: 'FacilityPrice'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -78,17 +82,15 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 
 export const UserScalarFieldEnum = {
   id: 'id',
-  nameAr: 'nameAr',
   nameEn: 'nameEn',
-  specialization: 'specialization',
+  nameAr: 'nameAr',
   phoneNumber: 'phoneNumber',
   passwordHash: 'passwordHash',
   userAuthToken: 'userAuthToken',
-  medicalCenterId: 'medicalCenterId',
-  isOwner: 'isOwner',
+  specialization: 'specialization',
+  systemRole: 'systemRole',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  roleId: 'roleId',
   status: 'status'
 } as const
 
@@ -97,8 +99,9 @@ export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof User
 
 export const ClinicScalarFieldEnum = {
   id: 'id',
-  clinicName: 'clinicName',
-  ownerId: 'ownerId',
+  name: 'name',
+  status: 'status',
+  subscriptionEndsAt: 'subscriptionEndsAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -109,7 +112,8 @@ export type ClinicScalarFieldEnum = (typeof ClinicScalarFieldEnum)[keyof typeof 
 export const MedicalCenterScalarFieldEnum = {
   id: 'id',
   centerName: 'centerName',
-  ownerId: 'ownerId',
+  status: 'status',
+  subscriptionEndsAt: 'subscriptionEndsAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -117,34 +121,74 @@ export const MedicalCenterScalarFieldEnum = {
 export type MedicalCenterScalarFieldEnum = (typeof MedicalCenterScalarFieldEnum)[keyof typeof MedicalCenterScalarFieldEnum]
 
 
-export const RoleScalarFieldEnum = {
+export const ClinicMemberScalarFieldEnum = {
   id: 'id',
-  name: 'name'
+  userId: 'userId',
+  clinicId: 'clinicId',
+  role: 'role',
+  joinedAt: 'joinedAt'
 } as const
 
-export type RoleScalarFieldEnum = (typeof RoleScalarFieldEnum)[keyof typeof RoleScalarFieldEnum]
+export type ClinicMemberScalarFieldEnum = (typeof ClinicMemberScalarFieldEnum)[keyof typeof ClinicMemberScalarFieldEnum]
+
+
+export const MedicalCenterMemberScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  medicalCenterId: 'medicalCenterId',
+  role: 'role',
+  joinedAt: 'joinedAt'
+} as const
+
+export type MedicalCenterMemberScalarFieldEnum = (typeof MedicalCenterMemberScalarFieldEnum)[keyof typeof MedicalCenterMemberScalarFieldEnum]
 
 
 export const PatientScalarFieldEnum = {
   id: 'id',
-  fullname: 'fullname',
+  fullnameEn: 'fullnameEn',
   fullnameAr: 'fullnameAr',
   phoneNumber: 'phoneNumber',
+  birthDate: 'birthDate',
+  gender: 'gender',
   createdById: 'createdById',
   createdAt: 'createdAt',
-  updated: 'updated'
+  updatedAt: 'updatedAt'
 } as const
 
 export type PatientScalarFieldEnum = (typeof PatientScalarFieldEnum)[keyof typeof PatientScalarFieldEnum]
 
 
+export const PatientAccessScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  doctorId: 'doctorId',
+  clinicId: 'clinicId',
+  grantedAt: 'grantedAt'
+} as const
+
+export type PatientAccessScalarFieldEnum = (typeof PatientAccessScalarFieldEnum)[keyof typeof PatientAccessScalarFieldEnum]
+
+
+export const AppointmentScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  patientId: 'patientId',
+  doctorId: 'doctorId',
+  clinicId: 'clinicId',
+  medicalCenterId: 'medicalCenterId',
+  status: 'status',
+  notes: 'notes',
+  createdAt: 'createdAt'
+} as const
+
+export type AppointmentScalarFieldEnum = (typeof AppointmentScalarFieldEnum)[keyof typeof AppointmentScalarFieldEnum]
+
+
 export const TreatmentGroupScalarFieldEnum = {
   id: 'id',
-  name: 'name',
+  nameEn: 'nameEn',
   nameAr: 'nameAr',
-  color: 'color',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  color: 'color'
 } as const
 
 export type TreatmentGroupScalarFieldEnum = (typeof TreatmentGroupScalarFieldEnum)[keyof typeof TreatmentGroupScalarFieldEnum]
@@ -152,15 +196,24 @@ export type TreatmentGroupScalarFieldEnum = (typeof TreatmentGroupScalarFieldEnu
 
 export const TreatmentScalarFieldEnum = {
   id: 'id',
-  name: 'name',
+  nameEn: 'nameEn',
   nameAr: 'nameAr',
   groupId: 'groupId',
-  basePrice: 'basePrice',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  basePrice: 'basePrice'
 } as const
 
 export type TreatmentScalarFieldEnum = (typeof TreatmentScalarFieldEnum)[keyof typeof TreatmentScalarFieldEnum]
+
+
+export const FacilityPriceScalarFieldEnum = {
+  id: 'id',
+  price: 'price',
+  treatmentId: 'treatmentId',
+  clinicId: 'clinicId',
+  medicalCenterId: 'medicalCenterId'
+} as const
+
+export type FacilityPriceScalarFieldEnum = (typeof FacilityPriceScalarFieldEnum)[keyof typeof FacilityPriceScalarFieldEnum]
 
 
 export const SortOrder = {
